@@ -19,6 +19,10 @@ class GameServerClient {
 }
 
 class GameServer extends ChessInstanceWrapper {
+    constructor() {
+        super()
+    }
+    
     public users: GameServerClient[]
 
     // --------------------------------------
@@ -39,7 +43,7 @@ class GameServer extends ChessInstanceWrapper {
         let result: any = null
         
         try {
-            result = this[method](...args)
+            result = this.instance[method](...args)
         }
         catch(err) {
             return new Error()
