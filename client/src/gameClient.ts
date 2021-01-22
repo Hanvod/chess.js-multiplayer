@@ -23,7 +23,7 @@ class GameClient extends ChessInstanceWrapper {
     }
 
     private resyncHandler(fen: string) {
-        this.instance.load(fen)
+        //this.instance.load(fen)
     }
 
     private methodCallHandler(method: string, args: any[]) {
@@ -85,3 +85,5 @@ class GameClient extends ChessInstanceWrapper {
         return await this.remoteMethodCall("clear", [])
     }
 }
+
+export default GameClient

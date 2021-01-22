@@ -23,7 +23,7 @@ class GameServer extends ChessInstanceWrapper {
         super()
     }
     
-    public users: GameServerClient[]
+    public users: GameServerClient[] = []
 
     // --------------------------------------
     //               Network
@@ -46,7 +46,7 @@ class GameServer extends ChessInstanceWrapper {
             result = this.instance[method](...args)
         }
         catch(err) {
-            return new Error()
+            return err as Error
         }
 
         this.users.forEach(client => {
@@ -150,3 +150,5 @@ class GameServer extends ChessInstanceWrapper {
         return this.sharedMethodCall("clear", [])
     }
 }
+
+export default GameServer
