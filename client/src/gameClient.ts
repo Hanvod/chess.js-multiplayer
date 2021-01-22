@@ -3,6 +3,9 @@ import { io } from "socket.io-client"
 import ChessInstanceWrapper from "./chessWrapperBase";
 import { Move, ShortMove, Square, Piece } from "chess.js"
 
+type BoardEvent = "board_connection" | "board_update" | "black_turn" | "white_turn"
+type BoardEventHandler = (sender: GameClient) => void
+
 class GameClient extends ChessInstanceWrapper {
     private socket: Socket = null
 
@@ -23,11 +26,13 @@ class GameClient extends ChessInstanceWrapper {
     }
 
     private resyncHandler(fen: string) {
-        //this.instance.load(fen)
+        this.instance.load(fen)
+        this.emitBoardUpdateEvents()
     }
 
     private methodCallHandler(method: string, args: any[]) {
         this.instance[method](...args)
+        this.emitBoardUpdateEvents()
     }
 
     private remoteMethodCall(method: string, args: any[]): Promise<any> {
@@ -35,12 +40,23 @@ class GameClient extends ChessInstanceWrapper {
             this.socket.emit("chess::method_call", method, args, (success: boolean) => {
                 if(success) {
                     resolve(this.instance[method](...args))
+                    this.emitBoardUpdateEvents()
                 }
                 else {
                     reject("Not allowed")
                 }
             })
         })
+    }
+
+    private lastTurn: "b" | "w" = this.turn()
+
+    private emitBoardUpdateEvents() {
+        this.emit("board_update")
+
+        if(this.turn() !== this.lastTurn) {
+            this.emit(this.turn() === "w" ? "white_turn" : "black_turn")
+        }
     }
 
     // --------------------------------------
@@ -83,6 +99,31 @@ class GameClient extends ChessInstanceWrapper {
 
     public async clear(): Promise<void> {
         return await this.remoteMethodCall("clear", [])
+    }
+
+    // --------------------------------------
+    //              Events
+    // -------------------------------------- 
+
+    // board_connection, board_update, black_turn, white_turn
+    
+    private eventHandlers = new Map<BoardEvent, BoardEventHandler[]>() 
+
+    /** 
+     *  @summary Add event listener
+     *  @description Event loop: board_connection => board_update => black_turn / white_turn 
+     */
+    public on(event: BoardEvent, handler: (sender: GameClient) => void) {
+        if(this.eventHandlers.has(event)) {
+            this.eventHandlers.get(event).push(handler)
+        }
+        else {
+            this.eventHandlers.set(event, [ handler ])
+        }
+    }
+
+    private emit(event: BoardEvent): void {
+        this.eventHandlers.get(event)?.forEach(handler => handler(this))
     }
 }
 
