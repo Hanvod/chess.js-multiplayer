@@ -11,6 +11,10 @@ const server = new Server()
 server.listen(3000)
 
 server.on("connection", (socket: Socket) => {
-    chessServer.addUser(socket, GamePermissions.Admin)
+    console.log("Клиент подключен!")
+    
+    socket.on("connect", () => {
+        console.log("connect is here")
+    })
 })
 

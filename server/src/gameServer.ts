@@ -15,6 +15,7 @@ class GameServerClient {
 
         socket.removeAllListeners("chess::method_call")
         socket.removeAllListeners("chess::move")
+        socket.removeAllListeners("chess::force_resync")
     }
 }
 
@@ -77,6 +78,14 @@ class GameServer extends ChessInstanceWrapper {
 
     private addEventHandlers(client: GameServerClient) {
         client.socket.on("chess::method_call", (method: string, args: any[], respond: (boolean) => void) => this.methodCallHandler(client, method, args, respond))
+        client.socket.on("disconnect", (reason: string) => this.disconnectEventHandler(client, reason))
+
+
+    }
+
+    private disconnectEventHandler(client: GameServerClient, reason: string) {
+        if(reason === "")
+        this.users = this.users.filter(user => user !== client)
     }
 
     private methodCallHandler(client: GameServerClient, method: string, args: any[], respond: (boolean) => void) {

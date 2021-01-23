@@ -3,16 +3,20 @@ import { io } from "socket.io-client"
 import ChessInstanceWrapper from "./chessWrapperBase";
 import { Move, ShortMove, Square, Piece } from "chess.js"
 
-type BoardEvent = "board_connection" | "board_update" | "black_turn" | "white_turn"
+type BoardEvent = "board_connection" | "board_update" | "black_turn" | "white_turn" | "game_over"
 type BoardEventHandler = (sender: GameClient) => void
 
 class GameClient extends ChessInstanceWrapper {
-    private socket: Socket = null
-
+    private _socket: Socket = null;
+    
+    public get socket(): Socket {
+        return this._socket;
+    }
+    
     constructor(endpoint: string) {
         super()
 
-        this.socket = io(endpoint)
+        this._socket = io(endpoint)
         this.addEventListeners()
     }
 
@@ -21,13 +25,17 @@ class GameClient extends ChessInstanceWrapper {
     // --------------------------------------
 
     private addEventListeners(): void {
-        this.socket.on("chess::resync", this.resyncHandler)
-        this.socket.on("chess::method_call", this.methodCallHandler)
+        this._socket.on("chess::resync", (fen: string, firstConnection: false) => this.resyncHandler(fen, firstConnection))
+        this._socket.on("chess::method_call", (method: string, args: any[]) => this.methodCallHandler(method, args))
     }
 
-    private resyncHandler(fen: string) {
+    private resyncHandler(fen: string, firstConnection: boolean) {
         this.instance.load(fen)
         this.emitBoardUpdateEvents()
+        
+        if(firstConnection) {
+            this.emit("board_connection")
+        }
     }
 
     private methodCallHandler(method: string, args: any[]) {
@@ -37,7 +45,7 @@ class GameClient extends ChessInstanceWrapper {
 
     private remoteMethodCall(method: string, args: any[]): Promise<any> {
         return new Promise((resolve, reject) => {
-            this.socket.emit("chess::method_call", method, args, (success: boolean) => {
+            this._socket.emit("chess::method_call", method, args, (success: boolean) => {
                 if(success) {
                     resolve(this.instance[method](...args))
                     this.emitBoardUpdateEvents()
@@ -54,8 +62,13 @@ class GameClient extends ChessInstanceWrapper {
     private emitBoardUpdateEvents() {
         this.emit("board_update")
 
+        if(this.instance.game_over()) {
+            this.emit("game_over")
+        }
+
         if(this.turn() !== this.lastTurn) {
             this.emit(this.turn() === "w" ? "white_turn" : "black_turn")
+            this.lastTurn = this.turn()
         }
     }
 
@@ -111,7 +124,7 @@ class GameClient extends ChessInstanceWrapper {
 
     /** 
      *  @summary Add event listener
-     *  @description Event loop: board_connection => board_update => black_turn / white_turn 
+     *  @description Event loop: board_connection => board_update => [game_end] => black_turn / white_turn 
      */
     public on(event: BoardEvent, handler: (sender: GameClient) => void) {
         if(this.eventHandlers.has(event)) {
