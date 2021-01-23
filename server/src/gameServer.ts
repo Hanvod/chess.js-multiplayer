@@ -1,4 +1,4 @@
-import { Socket } from "socket.io";
+import { Socket, Server, Namespace } from "socket.io";
 import ChessInstanceWrapper from "./chessWrapperBase";
 import GamePermissions from "./userPermissions";
 import { Move, ShortMove, Square, Piece } from "chess.js"
@@ -20,18 +20,49 @@ class GameServerClient {
 }
 
 class GameServer extends ChessInstanceWrapper {
-    constructor() {
+    private static instances: number = 0
+
+    constructor(ioServer: Server, permissionsResolver: (socket: Socket) => GamePermissions) {
         super()
+
+        this.permissionsResolver = permissionsResolver
+
+        this._id = GameServer.instances
+        GameServer.instances++
+
+        this.namespace = ioServer.of(`/chess/${this._id}`)
+        
+        this.namespace.use((socket: Socket, next) => {
+            const permissions: GamePermissions = this.permissionsResolver(socket)
+
+            if(!permissions.canConnect) {
+                next(new Error("You are not allowed to connect to this session"))
+            }
+
+            this.addUser(socket, permissions)
+            
+            next()
+        })
     }
     
+    public permissionsResolver: (socket: Socket) => GamePermissions = (socket: Socket) => GamePermissions.NotAllowed
+
+    private _id;
+    
+    public get id() {
+        return this._id;
+    }
+    
+    private namespace: Namespace = null
+
     public users: GameServerClient[] = []
 
     // --------------------------------------
     //               Network
     // --------------------------------------
 
-    private resync(client: GameServerClient) {
-        client.socket.emit("chess::resync", this.instance.fen())
+    private resync(client: GameServerClient, respond: (fen: string) => void) {
+        respond(this.fen())
     }
     
     /**
@@ -66,21 +97,18 @@ class GameServer extends ChessInstanceWrapper {
     /**
      * Adds client and instantly synchronize board
      */
-    public addUser(socket: Socket, permissions: GamePermissions): GameServerClient {
+    private addUser(socket: Socket, permissions: GamePermissions): void {
         const client = new GameServerClient(socket, this, permissions)
         
         this.addEventHandlers(client)
-        this.resync(client)
+        
         this.users.push(client)
-
-        return client
     }
 
     private addEventHandlers(client: GameServerClient) {
         client.socket.on("chess::method_call", (method: string, args: any[], respond: (boolean) => void) => this.methodCallHandler(client, method, args, respond))
         client.socket.on("disconnect", (reason: string) => this.disconnectEventHandler(client, reason))
-
-
+        client.socket.on("resync", (respond: (fen: string) => void) => this.resync(client, respond))
     }
 
     private disconnectEventHandler(client: GameServerClient, reason: string) {

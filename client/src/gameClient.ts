@@ -13,10 +13,15 @@ class GameClient extends ChessInstanceWrapper {
         return this._socket;
     }
     
-    constructor(endpoint: string) {
+    constructor(ip: string, gameID: number) {
         super()
-
-        this._socket = io(endpoint)
+        
+        this.instance.clear()
+        
+        this._socket = io(`${ip}/chess/${gameID}`)
+        
+        console.log(`${ip}/chess/${gameID}`)
+        
         this.addEventListeners()
     }
 
@@ -24,9 +29,19 @@ class GameClient extends ChessInstanceWrapper {
     //               Network
     // --------------------------------------
 
+    private forceResync() {
+        console.log("Подключения, синхронизируем данные...")
+
+        this._socket.emit("resync", (fen: string) => {
+            this.instance.load(fen)
+            console.log("Синхронизация успешна!")
+        })
+    }
+
     private addEventListeners(): void {
         this._socket.on("chess::resync", (fen: string, firstConnection: false) => this.resyncHandler(fen, firstConnection))
         this._socket.on("chess::method_call", (method: string, args: any[]) => this.methodCallHandler(method, args))
+        this._socket.on("connect", () => this.forceResync())
     }
 
     private resyncHandler(fen: string, firstConnection: boolean) {

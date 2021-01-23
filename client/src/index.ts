@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 import GameClient from "./gameClient";
-
-const chessClient = new GameClient("http://localhost:3000")
+/*
+const chessClient = new GameClient("http://localhost:3000", 0)
 
 // Player input mockup
 
@@ -58,5 +58,9 @@ globalThis.white_player = white_player
 globalThis.spectator = spectator
 
 globalThis.client = chessClient
+*/
 
 globalThis.io = io
+
+globalThis.GameClient = new GameClient("http://localhost:3000", 0)
+
