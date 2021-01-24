@@ -8,4 +8,6 @@ client.on("board_connection", (client: GameClient) => {
     console.log("Клиент подключен к серверу с номером " + client.connectedID)
 })
 
+client.move
+
 

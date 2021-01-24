@@ -1,23 +1,8 @@
 import { Socket, Server, Namespace } from "socket.io";
 import ChessInstanceWrapper from "./chessWrapperBase";
 import GamePermissions from "./userPermissions";
+import GameServerClient from "./gameServerClient"
 import { Move, ShortMove, Square, Piece } from "chess.js"
-
-class GameServerClient {
-    public readonly socket: Socket;
-    public readonly permissions: GamePermissions
-    public readonly server: GameServer
-
-    constructor(socket: Socket, server: GameServer, permissions: GamePermissions) {
-        this.socket = socket
-        this.server = server
-        this.permissions = permissions
-
-        socket.removeAllListeners("chess::method_call")
-        socket.removeAllListeners("chess::move")
-        socket.removeAllListeners("chess::force_resync")
-    }
-}
 
 class GameServer extends ChessInstanceWrapper {
     private static instances: number = 0
@@ -62,7 +47,7 @@ class GameServer extends ChessInstanceWrapper {
     private addEventHandlers(client: GameServerClient) {
         client.socket.on("chess::method_call", (method: string, args: any[], respond: (boolean) => void) => this.methodCallHandler(client, method, args, respond))
         client.socket.on("disconnect", (reason: string) => this.disconnectEventHandler(client, reason))
-        client.socket.on("resync", (respond: (fen: string) => void) => this.resyncHandler(client, respond))
+        client.socket.on("chess::resync", (respond: (fen: string) => void) => this.resyncHandler(client, respond))
     }
     
     private resyncHandler(client: GameServerClient, respond: (fen: string) => void) {

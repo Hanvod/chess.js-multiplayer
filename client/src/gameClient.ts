@@ -2,11 +2,12 @@ import { Socket } from "socket.io-client";
 import { io } from "socket.io-client"
 import ChessInstanceWrapper from "./chessWrapperBase";
 import { Move, ShortMove, Square, Piece } from "chess.js"
+import { GameClientInstance } from "./index.d"
 
 type BoardEvent = "board_connection" | "board_update" | "black_turn" | "white_turn"
 type BoardEventHandler = (sender: GameClient) => void
 
-class GameClient extends ChessInstanceWrapper {
+class GameClient extends ChessInstanceWrapper implements GameClientInstance {
     private _socket: Socket = null;
     
     private _connectedID: number = null;
@@ -30,28 +31,29 @@ class GameClient extends ChessInstanceWrapper {
     // --------------------------------------
 
     private forceResync() {
-        this._socket.emit("resync", (fen: string) => {
+        this._socket.emit("chess::resync", (fen: string) => {
             this.instance.load(fen)
             console.log("Синхронизация успешна!")
         })
     }
 
-    private connectionHandler(fen: string, id: number) {
+    private handshakeHandler(fen: string, id: number) {
         this.instance.load(fen)
         this._connectedID = id
         this.emit("board_connection")
     }
 
     private addEventListeners(): void {
-        this._socket.on("chess::resync", (fen: string) => this.resyncHandler(fen))
         this._socket.on("chess::method_call", (method: string, args: any[]) => this.methodCallHandler(method, args))
-        this._socket.on("chess_handshake", (fen: string, id: number) => this.connectionHandler(fen, id));
-        //this._socket.on("connect", () => this.forceResync())
+        this._socket.on("chess_handshake", (fen: string, id: number) => this.handshakeHandler(fen, id));
+        this._socket.on("connect", () => this.connectHandler())
     }
 
-    private resyncHandler(fen: string) {
-        this.instance.load(fen)
-        this.emitBoardUpdateEvents()
+    private connectHandler() {
+        // Resync in case of reconnect
+        if(this.connectedID !== null) {
+            this.forceResync()
+        }
     }
 
     private methodCallHandler(method: string, args: any[]) {
@@ -93,7 +95,7 @@ class GameClient extends ChessInstanceWrapper {
         options?: {
             sloppy?: boolean;
         },
-    ): Promise<Move | null> {
+    ): Promise<Move> {
         return await this.remoteMethodCall("move", [move])
     }
 
@@ -105,7 +107,7 @@ class GameClient extends ChessInstanceWrapper {
         return await this.remoteMethodCall("reset", [])
     }
 
-    public async remove(square: Square): Promise<Piece> {
+    public async remove(square: Square): Promise<Piece | null | false> {
         return await this.remoteMethodCall("remove", [square])
     }
 
@@ -123,6 +125,10 @@ class GameClient extends ChessInstanceWrapper {
 
     public async clear(): Promise<void> {
         return await this.remoteMethodCall("clear", [])
+    }
+
+    public async set_headers(...args: string[]): Promise<{ [key: string]: string | undefined } | boolean> {
+        return await this.remoteMethodCall("set_headers", [args])
     }
 
     // --------------------------------------
