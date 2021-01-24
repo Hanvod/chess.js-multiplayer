@@ -7,11 +7,6 @@ type BoardEvent = "board_connection" | "board_update" | "black_turn" | "white_tu
 type BoardEventHandler = (sender: GameClient) => void
 
 class GameClient extends ChessInstanceWrapper {
-<<<<<<< Updated upstream
-    private socket: Socket = null
-
-    constructor(endpoint: string) {
-=======
     private _socket: Socket = null;
     
     private _connectedID: number = null;
@@ -24,10 +19,9 @@ class GameClient extends ChessInstanceWrapper {
     }
     
     constructor(ip: string, gameID: number) {
->>>>>>> Stashed changes
         super()
 
-        this.socket = io(endpoint)
+        this._socket = io(`${ip}/chess/${gameID}`);
         this.addEventListeners()
     }
 
@@ -35,11 +29,6 @@ class GameClient extends ChessInstanceWrapper {
     //               Network
     // --------------------------------------
 
-<<<<<<< Updated upstream
-    private addEventListeners(): void {
-        this.socket.on("chess::resync", this.resyncHandler)
-        this.socket.on("chess::method_call", this.methodCallHandler)
-=======
     private forceResync() {
         this._socket.emit("resync", (fen: string) => {
             this.instance.load(fen)
@@ -54,11 +43,10 @@ class GameClient extends ChessInstanceWrapper {
     }
 
     private addEventListeners(): void {
-        this._socket.on("chess::resync", (fen: string, firstConnection: false) => this.resyncHandler(fen, firstConnection))
+        this._socket.on("chess::resync", (fen: string) => this.resyncHandler(fen))
         this._socket.on("chess::method_call", (method: string, args: any[]) => this.methodCallHandler(method, args))
         this._socket.on("chess_handshake", (fen: string, id: number) => this.connectionHandler(fen, id));
         //this._socket.on("connect", () => this.forceResync())
->>>>>>> Stashed changes
     }
 
     private resyncHandler(fen: string) {

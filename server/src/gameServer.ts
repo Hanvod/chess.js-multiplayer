@@ -1,4 +1,4 @@
-import { Socket } from "socket.io";
+import { Socket, Server, Namespace } from "socket.io";
 import ChessInstanceWrapper from "./chessWrapperBase";
 import GamePermissions from "./userPermissions";
 import { Move, ShortMove, Square, Piece } from "chess.js"
@@ -15,13 +15,11 @@ class GameServerClient {
 
         socket.removeAllListeners("chess::method_call")
         socket.removeAllListeners("chess::move")
+        socket.removeAllListeners("chess::force_resync")
     }
 }
 
 class GameServer extends ChessInstanceWrapper {
-<<<<<<< Updated upstream
-    constructor() {
-=======
     private static instances: number = 0
 
     private _id;
@@ -35,14 +33,28 @@ class GameServer extends ChessInstanceWrapper {
     public users: GameServerClient[] = []
 
     constructor(ioServer: Server, permissionsResolver: (socket: Socket) => GamePermissions) {
->>>>>>> Stashed changes
         super()
+
+        this.permissionsResolver = permissionsResolver
+
+        this._id = GameServer.instances
+        GameServer.instances++
+
+        this.namespace = ioServer.of(`/chess/${this._id}`)
+        
+        this.namespace.use((socket: Socket, next) => {
+            const permissions: GamePermissions = this.permissionsResolver(socket)
+
+            if(!permissions.canConnect) {
+                next(new Error("You are not allowed to connect to this session"))
+            }
+
+            this.addUser(socket, permissions)
+            
+            next()
+        })
     }
     
-<<<<<<< Updated upstream
-    public users: GameServerClient[] = []
-
-=======
     // --------------------------------------
     //           Network events
     // --------------------------------------
@@ -62,24 +74,18 @@ class GameServer extends ChessInstanceWrapper {
         this.users = this.users.filter(user => user !== client)
     }
     
->>>>>>> Stashed changes
     // --------------------------------------
     //          Client management
     // --------------------------------------
 
-<<<<<<< Updated upstream
-    private resync(client: GameServerClient) {
-        client.socket.emit("chess::resync", this.instance.fen())
-=======
     public addUser(socket: Socket, permissions: GamePermissions): GameServerClient {
         const client = new GameServerClient(socket, this, permissions)
         this.addEventHandlers(client)
         this.users.push(client)
 
-        socket.emit("chess_handshake", this.fen(), this._id)
+        socket.emit("chess_handshake", this.fen(), this.id)
 
         return client;
->>>>>>> Stashed changes
     }
 
     // --------------------------------------
@@ -105,30 +111,6 @@ class GameServer extends ChessInstanceWrapper {
         return result
     }    
 
-<<<<<<< Updated upstream
-    // --------------------------------------
-    //          Client management
-    // --------------------------------------
-
-    /**
-     * Adds client and instantly synchronize board
-     */
-    public addUser(socket: Socket, permissions: GamePermissions): GameServerClient {
-        const client = new GameServerClient(socket, this, permissions)
-        
-        this.addEventHandlers(client)
-        this.resync(client)
-        this.users.push(client)
-
-        return client
-    }
-
-    private addEventHandlers(client: GameServerClient) {
-        client.socket.on("chess::method_call", (method: string, args: any[], respond: (boolean) => void) => this.methodCallHandler(client, method, args, respond))
-    }
-
-=======
->>>>>>> Stashed changes
     private methodCallHandler(client: GameServerClient, method: string, args: any[], respond: (boolean) => void) {
         let success = false
 
