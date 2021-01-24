@@ -19,26 +19,73 @@ class GameServerClient {
 }
 
 class GameServer extends ChessInstanceWrapper {
+<<<<<<< Updated upstream
     constructor() {
+=======
+    private static instances: number = 0
+
+    private _id;
+    private namespace: Namespace = null
+    
+    public get id() {
+        return this._id;
+    }
+    
+    public permissionsResolver: (socket: Socket) => GamePermissions = (socket: Socket) => GamePermissions.NotAllowed
+    public users: GameServerClient[] = []
+
+    constructor(ioServer: Server, permissionsResolver: (socket: Socket) => GamePermissions) {
+>>>>>>> Stashed changes
         super()
     }
     
+<<<<<<< Updated upstream
     public users: GameServerClient[] = []
 
+=======
     // --------------------------------------
-    //               Network
+    //           Network events
     // --------------------------------------
 
-    private resync(client: GameServerClient) {
-        client.socket.emit("chess::resync", this.instance.fen())
+    private addEventHandlers(client: GameServerClient) {
+        client.socket.on("chess::method_call", (method: string, args: any[], respond: (boolean) => void) => this.methodCallHandler(client, method, args, respond))
+        client.socket.on("disconnect", (reason: string) => this.disconnectEventHandler(client, reason))
+        client.socket.on("resync", (respond: (fen: string) => void) => this.resyncHandler(client, respond))
     }
     
-    /**
-     * 
-     * @param method Имя метода
-     * @param args Массив аргументов
-     * @param ignoredClient Не передавать информацию этому клиенту (используется, когда метод вызван самим клиентом)
-     */
+    private resyncHandler(client: GameServerClient, respond: (fen: string) => void) {
+        respond(this.fen())
+    }
+    
+    private disconnectEventHandler(client: GameServerClient, reason: string) {
+        if(reason === "")
+        this.users = this.users.filter(user => user !== client)
+    }
+    
+>>>>>>> Stashed changes
+    // --------------------------------------
+    //          Client management
+    // --------------------------------------
+
+<<<<<<< Updated upstream
+    private resync(client: GameServerClient) {
+        client.socket.emit("chess::resync", this.instance.fen())
+=======
+    public addUser(socket: Socket, permissions: GamePermissions): GameServerClient {
+        const client = new GameServerClient(socket, this, permissions)
+        this.addEventHandlers(client)
+        this.users.push(client)
+
+        socket.emit("chess_handshake", this.fen(), this._id)
+
+        return client;
+>>>>>>> Stashed changes
+    }
+
+    // --------------------------------------
+    //                 RPC
+    // --------------------------------------
+    
     private sharedMethodCall(method: string, args: any[], ignoredClient?: GameServerClient): any | Error {
         let result: any = null
         
@@ -58,6 +105,7 @@ class GameServer extends ChessInstanceWrapper {
         return result
     }    
 
+<<<<<<< Updated upstream
     // --------------------------------------
     //          Client management
     // --------------------------------------
@@ -79,6 +127,8 @@ class GameServer extends ChessInstanceWrapper {
         client.socket.on("chess::method_call", (method: string, args: any[], respond: (boolean) => void) => this.methodCallHandler(client, method, args, respond))
     }
 
+=======
+>>>>>>> Stashed changes
     private methodCallHandler(client: GameServerClient, method: string, args: any[], respond: (boolean) => void) {
         let success = false
 
@@ -92,7 +142,7 @@ class GameServer extends ChessInstanceWrapper {
 
         respond(success)
     }
-    
+
     private tryToMoveByRules(client: GameServerClient, move: ShortMove | Move | string) {
         let success = false
         
