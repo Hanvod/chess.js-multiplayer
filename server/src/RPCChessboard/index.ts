@@ -1,16 +1,16 @@
 import ObservableBoard from "./observableBoard";
 import { Socket, Server, Namespace } from "socket.io";
 import ChessInstanceWrapper from "./chessWrapperBase";
-import GamePermissions from "../userPermissions";
-import GameServerClient from "../gameServerClient"
+import GamePermissions from "./userPermissions";
+import ChessboardClient from "./chessboardClient"
 import { Move, ShortMove, Square, Piece } from "chess.js"
-import { GameServerSharedMethods, BoardEvent, BoardEventHandler, PermissionsResolver } from "../interfaces"
+import { GameServerSharedMethods, BoardEvent, BoardEventHandler, PermissionsResolver, IChessboardClient } from "../interfaces"
 
 class RPCChessBoard extends ObservableBoard implements GameServerSharedMethods {
     public permissionsResolver: (socket: Socket) => GamePermissions = (socket: Socket) => GamePermissions.NotAllowed
     
-    private _users: GameServerClient[] = [];
-    public get users(): GameServerClient[] {
+    private _users: IChessboardClient[] = [];
+    public get users(): IChessboardClient[] {
         return [ ...this._users ];
     }
     
@@ -18,11 +18,11 @@ class RPCChessBoard extends ObservableBoard implements GameServerSharedMethods {
     //           Network events
     // --------------------------------------
 
-    private resyncHandler(client: GameServerClient, respond: (fen: string) => void) {
+    private resyncHandler(client: IChessboardClient, respond: (fen: string) => void) {
         respond(this.fen())
     }
     
-    private disconnectEventHandler(client: GameServerClient, reason: string) {
+    private disconnectEventHandler(client: IChessboardClient, reason: string) {
         if(reason === "io server disconnect" || reason === "io client disconnect") {
             this._users = this._users.filter(user => user !== client)
         }
@@ -32,8 +32,8 @@ class RPCChessBoard extends ObservableBoard implements GameServerSharedMethods {
     //          Client management
     // --------------------------------------
 
-    public addUser(socket: Socket, permissions: GamePermissions | PermissionsResolver, handshakeData?: any): GameServerClient | false {
-        const client = new GameServerClient(socket, this, permissions)
+    public addUser(socket: Socket, permissions: GamePermissions | PermissionsResolver, handshakeData?: any): IChessboardClient | false {
+        const client = new ChessboardClient(socket, this, permissions)
         
         if(!client.permissions.canConnect) {
             return false
@@ -49,12 +49,12 @@ class RPCChessBoard extends ObservableBoard implements GameServerSharedMethods {
         return client
     }
 
-    private clearEventHandlers(client: GameServerClient) {
+    private clearEventHandlers(client: IChessboardClient) {
         client.socket.removeAllListeners("chess::method_call")
         client.socket.removeAllListeners("chess::resync")
     }
 
-    private addEventHandlers(client: GameServerClient) {
+    private addEventHandlers(client: IChessboardClient) {
         client.socket.on("chess::method_call", (method: string, args: any[], respond: (boolean) => void) => this.methodCallHandler(client, method, args, respond))
         client.socket.on("disconnect", (reason: string) => this.disconnectEventHandler(client, reason))
         client.socket.on("chess::resync", (respond: (fen: string) => void) => this.resyncHandler(client, respond))
@@ -64,7 +64,7 @@ class RPCChessBoard extends ObservableBoard implements GameServerSharedMethods {
     //                 RPC
     // --------------------------------------
 
-    private sharedMethodCall(method: string, args: any[], ignoredClient?: GameServerClient): any | Error {
+    private sharedMethodCall(method: string, args: any[], ignoredClient?: IChessboardClient): any | Error {
         let result: any = null
         
         try {
@@ -85,7 +85,7 @@ class RPCChessBoard extends ObservableBoard implements GameServerSharedMethods {
         return result
     }    
 
-    private methodCallHandler(client: GameServerClient, method: string, args: any[], respond: (boolean) => void) {
+    private methodCallHandler(client: IChessboardClient, method: string, args: any[], respond: (boolean) => void) {
         let success = false
 
         if(client.permissions.methods.includes(method)) {
@@ -99,7 +99,7 @@ class RPCChessBoard extends ObservableBoard implements GameServerSharedMethods {
         respond(success)
     }
 
-    private tryToMoveByRules(client: GameServerClient, move: ShortMove | Move | string) {
+    private tryToMoveByRules(client: IChessboardClient, move: ShortMove | Move | string) {
         let success = false
         
         const canPlayBlack = client.permissions.canPlayBlack

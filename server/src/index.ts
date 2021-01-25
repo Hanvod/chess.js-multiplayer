@@ -1,9 +1,6 @@
-import { Server, Socket } from "socket.io";
-import GameServer from "./gameServer";
-import GamePermissions from "./userPermissions";
+import RPCChessBoard from "./RPCChessboard"
+import { BoardEvent, BoardEventHandler, PermissionsResolver, IChessboardClient } from "./interfaces"
 
-const server = new Server()
+export { RPCChessBoard, BoardEvent, BoardEventHandler, PermissionsResolver, IChessboardClient }
 
-server.listen(3000)
-
-globalThis.GameServer = new GameServer(server, (socket: Socket) => GamePermissions.Admin)
+const board = new RPCChessBoard();
