@@ -18,15 +18,7 @@ class RPCChessBoard extends ObservableBoard implements GameServerSharedMethods {
     //           Network events
     // --------------------------------------
 
-    private resyncHandler(client: IChessboardClient, respond: (fen: string) => void) {
-        respond(this.fen())
-    }
     
-    private disconnectEventHandler(client: IChessboardClient, reason: string) {
-        if(reason === "io server disconnect" || reason === "io client disconnect") {
-            this._users = this._users.filter(user => user !== client)
-        }
-    }
     
     // --------------------------------------
     //          Client management
@@ -39,13 +31,15 @@ class RPCChessBoard extends ObservableBoard implements GameServerSharedMethods {
             return false
         }
         
-        this.emit("player_connection", client)
-        
         this.clearEventHandlers(client)
         this.addEventHandlers(client)
         
-        socket.emit("chess_handshake", this.fen(), handshakeData)
+        socket.emit("chess::handshake", this.fen(), handshakeData, () => {
+            this.emit("player_connection", client)
+        })
         
+        this._users.push(client)
+
         return client
     }
 
@@ -58,6 +52,17 @@ class RPCChessBoard extends ObservableBoard implements GameServerSharedMethods {
         client.socket.on("chess::method_call", (method: string, args: any[], respond: (boolean) => void) => this.methodCallHandler(client, method, args, respond))
         client.socket.on("disconnect", (reason: string) => this.disconnectEventHandler(client, reason))
         client.socket.on("chess::resync", (respond: (fen: string) => void) => this.resyncHandler(client, respond))
+    }
+
+    private resyncHandler(client: IChessboardClient, respond: (fen: string) => void) {
+        respond(this.fen())
+    }
+    
+    private disconnectEventHandler(client: IChessboardClient, reason: string) {
+        if(reason === "io server disconnect" || reason === "io client disconnect") {
+            this._users = this._users.filter(user => user !== client)
+            this.clearEventHandlers(client)
+        }
     }
     
     // --------------------------------------
