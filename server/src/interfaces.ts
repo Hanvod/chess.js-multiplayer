@@ -1,6 +1,13 @@
 import { ShortMove, Move, Piece, Square, PieceType, ChessInstance } from "chess.js"
+import ChessInstanceWrapper from "./chessboard/chessWrapperBase"
+import GameServer from "./chessboard/gameServer"
+import GameServerClient from "./gameServerClient"
+import GamePermissions from "./userPermissions"
 
-type BoardEvent = "board_connection" | "board_update" | "black_turn" | "white_turn"
+type BoardEvent = "player_connection" | "board_update" | "game_over" | "black_turn" | "white_turn"
+type BoardEventHandler = (sender: ChessInstanceWrapper, ...args: any[]) => void
+
+type PermissionsResolver = (client: GameServerClient) => GamePermissions
 
 interface ChessWrapper extends Omit<ChessInstance, "move" | "undo" | "reset" | "remove" | "put" | "header" | "move" | "load_pgn" | "load" | "clear"> {
 
@@ -145,5 +152,5 @@ interface GameServerSharedMethods {
     set_headers(...args: string[]): { [key: string]: string | undefined }
 }
 
-export { GameServerSharedMethods, ChessWrapper, BoardEvent }
+export { GameServerSharedMethods, ChessWrapper, BoardEvent, BoardEventHandler, PermissionsResolver }
 

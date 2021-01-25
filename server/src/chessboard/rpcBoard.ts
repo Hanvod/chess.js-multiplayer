@@ -1,49 +1,58 @@
+import ObservableBoard from "./observableBoard";
 import { Socket, Server, Namespace } from "socket.io";
 import ChessInstanceWrapper from "./chessWrapperBase";
-import GamePermissions from "./userPermissions";
-import GameServerClient from "./gameServerClient"
+import GamePermissions from "../userPermissions";
+import GameServerClient from "../gameServerClient"
 import { Move, ShortMove, Square, Piece } from "chess.js"
-import { GameServerSharedMethods } from "./interfaces"
+import { GameServerSharedMethods, BoardEvent, BoardEventHandler, PermissionsResolver } from "../interfaces"
 
-class GameServer extends ChessInstanceWrapper implements GameServerSharedMethods {
-    private static instances: number = 0
-
-    private _id;
-    private namespace: Namespace = null
-    
-    public get id() {
-        return this._id;
-    }
-    
+class RPCChessBoard extends ObservableBoard implements GameServerSharedMethods {
     public permissionsResolver: (socket: Socket) => GamePermissions = (socket: Socket) => GamePermissions.NotAllowed
-    public users: GameServerClient[] = []
-
-    constructor(ioServer: Server, permissionsResolver: (socket: Socket) => GamePermissions) {
-        super()
-
-        this.permissionsResolver = permissionsResolver
-
-        this._id = GameServer.instances
-        GameServer.instances++
-
-        this.namespace = ioServer.of(`/chess/${this._id}`)
-        
-        this.namespace.use((socket: Socket, next) => {
-            const permissions: GamePermissions = this.permissionsResolver(socket)
-
-            if(!permissions.canConnect) {
-                next(new Error("You are not allowed to connect to this session"))
-            }
-
-            this.addUser(socket, permissions)
-            
-            next()
-        })
+    
+    private _users: GameServerClient[] = [];
+    public get users(): GameServerClient[] {
+        return [ ...this._users ];
     }
     
     // --------------------------------------
     //           Network events
     // --------------------------------------
+
+    private resyncHandler(client: GameServerClient, respond: (fen: string) => void) {
+        respond(this.fen())
+    }
+    
+    private disconnectEventHandler(client: GameServerClient, reason: string) {
+        if(reason === "io server disconnect" || reason === "io client disconnect") {
+            this._users = this._users.filter(user => user !== client)
+        }
+    }
+    
+    // --------------------------------------
+    //          Client management
+    // --------------------------------------
+
+    public addUser(socket: Socket, permissions: GamePermissions | PermissionsResolver, handshakeData?: any): GameServerClient | false {
+        const client = new GameServerClient(socket, this, permissions)
+        
+        if(!client.permissions.canConnect) {
+            return false
+        }
+        
+        this.emit("player_connection", client)
+        
+        this.clearEventHandlers(client)
+        this.addEventHandlers(client)
+        
+        socket.emit("chess_handshake", this.fen(), handshakeData)
+        
+        return client
+    }
+
+    private clearEventHandlers(client: GameServerClient) {
+        client.socket.removeAllListeners("chess::method_call")
+        client.socket.removeAllListeners("chess::resync")
+    }
 
     private addEventHandlers(client: GameServerClient) {
         client.socket.on("chess::method_call", (method: string, args: any[], respond: (boolean) => void) => this.methodCallHandler(client, method, args, respond))
@@ -51,33 +60,10 @@ class GameServer extends ChessInstanceWrapper implements GameServerSharedMethods
         client.socket.on("chess::resync", (respond: (fen: string) => void) => this.resyncHandler(client, respond))
     }
     
-    private resyncHandler(client: GameServerClient, respond: (fen: string) => void) {
-        respond(this.fen())
-    }
-    
-    private disconnectEventHandler(client: GameServerClient, reason: string) {
-        if(reason === "")
-        this.users = this.users.filter(user => user !== client)
-    }
-    
-    // --------------------------------------
-    //          Client management
-    // --------------------------------------
-
-    public addUser(socket: Socket, permissions: GamePermissions): GameServerClient {
-        const client = new GameServerClient(socket, this, permissions)
-        this.addEventHandlers(client)
-        this.users.push(client)
-
-        socket.emit("chess_handshake", this.fen(), this.id)
-
-        return client;
-    }
-
     // --------------------------------------
     //                 RPC
     // --------------------------------------
-    
+
     private sharedMethodCall(method: string, args: any[], ignoredClient?: GameServerClient): any | Error {
         let result: any = null
         
@@ -93,6 +79,8 @@ class GameServer extends ChessInstanceWrapper implements GameServerSharedMethods
                 client.socket.emit("chess::method_call", method, args)
             }
         })
+
+        this.invokeBoardEvents()
 
         return result
     }    
@@ -173,4 +161,4 @@ class GameServer extends ChessInstanceWrapper implements GameServerSharedMethods
     }
 }
 
-export default GameServer
+export default RPCChessBoard
