@@ -4,7 +4,9 @@ import GameServer from "./gameServer"
 
 class GameServerClient {
     public readonly socket: Socket;
+   
     public readonly permissions: GamePermissions
+   
     public readonly server: GameServer
 
     constructor(socket: Socket, server: GameServer, permissions: GamePermissions) {

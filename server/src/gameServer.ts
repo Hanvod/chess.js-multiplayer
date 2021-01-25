@@ -3,8 +3,9 @@ import ChessInstanceWrapper from "./chessWrapperBase";
 import GamePermissions from "./userPermissions";
 import GameServerClient from "./gameServerClient"
 import { Move, ShortMove, Square, Piece } from "chess.js"
+import { GameServerSharedMethods } from "./interfaces"
 
-class GameServer extends ChessInstanceWrapper {
+class GameServer extends ChessInstanceWrapper implements GameServerSharedMethods {
     private static instances: number = 0
 
     private _id;
@@ -165,6 +166,10 @@ class GameServer extends ChessInstanceWrapper {
 
     public clear(): void {
         return this.sharedMethodCall("clear", [])
+    }
+
+    public set_headers(...args: string[]): { [key: string]: string | undefined }  {
+        return this.sharedMethodCall("header", [args])
     }
 }
 

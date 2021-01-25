@@ -1,18 +1,14 @@
-import { Socket } from "socket.io-client";
 import { ShortMove, Move, Piece, Square, PieceType, ChessInstance } from "chess.js"
-import GameClient from "./gameClient";
 
 type BoardEvent = "board_connection" | "board_update" | "black_turn" | "white_turn"
-type BoardEventHandler = (sender: GameClient) => void
 
 interface ChessWrapper extends Omit<ChessInstance, "move" | "undo" | "reset" | "remove" | "put" | "header" | "move" | "load_pgn" | "load" | "clear"> {
 
 }
 
-interface GameClientAsyncMethods {
+interface GameServerSharedMethods {
     /**
-     * This method is async and will be executed only after server-side permission validation.
-     * Returns false if execution is forbidden or failed.
+     * This method is shared. It will be executed on every client connected to game.
      * 
      * Attempts to make a move on the board, returning a move object if the
      * move was legal, otherwise null.
@@ -38,29 +34,26 @@ interface GameClientAsyncMethods {
              */
             sloppy?: boolean;
         },
-    ): Promise<Move | false>;
+    ): Move;
 
     /**
-     * This method is async and will be executed only after server-side permission validation.
-     * Returns false if execution is forbidden or failed.
-     * 
+     * This method is shared. It will be executed on every client connected to game.
+     *      
      * Take back the last half-move, returning a move object if successful,
      * otherwise null.
      * @returns the move object that was undone if successful, otherwise null.
      */
-    undo(): Promise<Move | false>;
+    undo(): Move;
     
     /**
-     * This method is async and will be executed only after server-side permission validation.
-     * Returns false if execution is forbidden or failed.
+     * This method is shared. It will be executed on every client connected to game.
      * 
      * Clears the board of all pieces.
      */
-    clear(): Promise<void | false>;
+    clear(): void;
 
     /**
-     * This method is async and will be executed only after server-side permission validation.
-     * Returns false if execution is forbidden or failed.
+     * This method is shared. It will be executed on every client connected to game.
      * 
      * Place a piece on the square where piece is an object with the form
      * { type: ..., color: ... }.
@@ -71,23 +64,21 @@ interface GameClientAsyncMethods {
      * @returns true if the piece was successfully placed, otherwise, the
      * board remains unchanged and false is returned.
      */
-    put(piece: Piece, square: Square): Promise<boolean>;
+    put(piece: Piece, square: Square): boolean;
 
     /**
-     * This method is async and will be executed only after server-side permission validation.
-     * Returns false if execution is forbidden or failed. 
-     * 
+     * This method is shared. It will be executed on every client connected to game.
+     *      
      * Remove and return the piece on square.
      * @param square the square to remove the piece from, e.g. "b6"
      * @returns null if no piece was removed, otherwise an object with the
      * removed piece's type and color.
      */
-    remove(square: Square): Promise<Piece | null | false>;
+    remove(square: Square): Piece | null;
 
     /**
-     * This method is async and will be executed only after server-side permission validation.
-     * Returns false if execution is forbidden or failed.
-     * 
+     * This method is shared. It will be executed on every client connected to game.
+     *      
      * Load the moves of a game stored in Portable Game Notation.
      * @param pgn the pgn should be a string in Portable Game Notation.
      * @param options An optional object which may contain a string
@@ -119,27 +110,25 @@ interface GameClientAsyncMethods {
              */
             sloppy?: boolean;
         },
-    ): Promise<boolean>;
+    ): boolean;
 
     /**
-     * This method is async and will be executed only after server-side permission validation.
-     * Returns false if execution is forbidden or failed.
+     * This method is shared. It will be executed on every client connected to game.
      * 
      * Reset the board to the initial starting position.
      */
-    reset(): Promise<void | false>;
+    reset(): void;
 
     /**
-     * This method is async and will be executed only after server-side permission validation.
-     * Returns false if execution is forbidden or failed.
-     * 
+     * This method is shared. It will be executed on every client connected to game.
+     *      
      * The board is cleared, and the FEN string is loaded.
      * Returns true if the position was successfully loaded, otherwise false
      * @param fen the fen formatted string to load
      * @returns true if the position was successfully loaded, otherwise
      * false
      */
-    load(fen: string): Promise<boolean>;
+    load(fen: string): boolean;
     
     /**
      * Allows to get header information from PGN output.
@@ -148,33 +137,13 @@ interface GameClientAsyncMethods {
     get_headers(): { [key: string]: string | undefined } 
 
     /**
-     * This method is async and will be executed only after server-side permission validation.
-     * Returns false if execution is forbidden or failed.
+     * This method is shared. It will be executed on every client connected to game.
      *
      * Allows to set header information to PGN output.
      * @returns The current header information after storing any values.
      */
-    set_headers(...args: string[]): Promise<{ [key: string]: string | undefined } | boolean>
+    set_headers(...args: string[]): { [key: string]: string | undefined }
 }
 
-interface GameClientInstance {
-    /**
-     * ID of connected board
-     */
-    connectedID: number | null
-    
-    /**
-     * Socket client uses
-     */
-    socket: Socket
-
-    /** 
-     *  Adds event listener
-     *  
-     *  Event loop: board_connection => board_update => black_turn / white_turn 
-     */
-    on(event: BoardEvent, handler: BoardEventHandler): void
-}
-
-export { GameClientAsyncMethods, ChessWrapper, BoardEvent, BoardEventHandler, GameClientInstance }
+export { GameServerSharedMethods, ChessWrapper, BoardEvent }
 
