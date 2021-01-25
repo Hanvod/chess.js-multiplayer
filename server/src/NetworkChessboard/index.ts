@@ -6,19 +6,13 @@ import ChessboardClient from "./chessboardClient"
 import { Move, ShortMove, Square, Piece } from "chess.js"
 import { GameServerSharedMethods, BoardEvent, BoardEventHandler, PermissionsResolver, IChessboardClient } from "../interfaces"
 
-class RPCChessBoard extends ObservableBoard implements GameServerSharedMethods {
+class NetworkChessboard extends ObservableBoard implements GameServerSharedMethods {
     public permissionsResolver: (socket: Socket) => GamePermissions = (socket: Socket) => GamePermissions.NotAllowed
     
     private _users: IChessboardClient[] = [];
     public get users(): IChessboardClient[] {
         return [ ...this._users ];
     }
-    
-    // --------------------------------------
-    //           Network events
-    // --------------------------------------
-
-    
     
     // --------------------------------------
     //          Client management
@@ -53,6 +47,10 @@ class RPCChessBoard extends ObservableBoard implements GameServerSharedMethods {
         client.socket.on("disconnect", (reason: string) => this.disconnectEventHandler(client, reason))
         client.socket.on("chess::resync", (respond: (fen: string) => void) => this.resyncHandler(client, respond))
     }
+
+    // --------------------------------------
+    //           Network events
+    // --------------------------------------
 
     private resyncHandler(client: IChessboardClient, respond: (fen: string) => void) {
         respond(this.fen())
@@ -166,4 +164,4 @@ class RPCChessBoard extends ObservableBoard implements GameServerSharedMethods {
     }
 }
 
-export default RPCChessBoard
+export default NetworkChessboard

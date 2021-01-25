@@ -1,4 +1,4 @@
-import RPCChessBoard from "./RPCChessboard"
+import NetworkChessboard from "./RPCChessboard"
 import { BoardEvent, BoardEventHandler, PermissionsResolver, IChessboardClient } from "./interfaces"
 
-export { RPCChessBoard, BoardEvent, BoardEventHandler, PermissionsResolver, IChessboardClient }
+export { NetworkChessboard, BoardEvent, BoardEventHandler, PermissionsResolver, IChessboardClient }
