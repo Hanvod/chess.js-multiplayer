@@ -1,5 +1,5 @@
 import { Chess, ChessInstance, Square, Move } from "chess.js"
-import { ChessWrapper } from "./index.d"
+import { ChessWrapper } from "./interfaces"
 
 /**
  * Contains methods that doesn't affect game state and not meant to be synchronized

@@ -1,13 +1,5 @@
 import GameClient from "./gameClient";
+import { BoardEvent, BoardEventHandler } from "./interfaces" 
 
-const client = new GameClient("http://localhost:3000", 0);
-
-globalThis.GameClient = client;
-
-client.on("board_connection", (client: GameClient) => {
-    console.log("Клиент подключен к серверу с номером " + client.connectedID)
-})
-
-client.move
-
+export { GameClient,  BoardEvent, BoardEventHandler }
 

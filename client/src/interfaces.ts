@@ -1,12 +1,15 @@
 import { Socket } from "socket.io-client";
 import { ShortMove, Move, Piece, Square, PieceType, ChessInstance } from "chess.js"
+import GameClient from "./gameClient";
+
+type BoardEvent = "board_connection" | "board_update" | "black_turn" | "white_turn"
+type BoardEventHandler = (sender: GameClient) => void
 
 interface ChessWrapper extends Omit<ChessInstance, "move" | "undo" | "reset" | "remove" | "put" | "header" | "move" | "load_pgn" | "load" | "clear"> {
 
 }
 
-interface GameClientInstance extends ChessWrapper {
-    
+interface GameClientAsyncMethods {
     /**
      * This method is async and will be executed only after server-side permission validation.
      * Returns false if execution is forbidden or failed.
@@ -153,6 +156,25 @@ interface GameClientInstance extends ChessWrapper {
      */
     set_headers(): Promise<{ [key: string]: string | undefined } | boolean>
 }
-//"!undo", "!reset", "!remove", "!put", "!move", "!load_pgn", "!load", "clear"
-export { GameClientInstance, ChessWrapper }
+
+interface GameClientInstance {
+    /**
+     * ID of connected board
+     */
+    connectedID: number | null
+    
+    /**
+     * Socket client uses
+     */
+    socket: Socket
+
+    /** 
+     *  Adds event listener
+     *  
+     *  Event loop: board_connection => board_update => black_turn / white_turn 
+     */
+    on(event: BoardEvent, handler: BoardEventHandler): void
+}
+
+export { GameClientAsyncMethods, ChessWrapper, BoardEvent, BoardEventHandler, GameClientInstance }
 

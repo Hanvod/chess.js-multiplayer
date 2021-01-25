@@ -2,12 +2,9 @@ import { Socket } from "socket.io-client";
 import { io } from "socket.io-client"
 import ChessInstanceWrapper from "./chessWrapperBase";
 import { Move, ShortMove, Square, Piece } from "chess.js"
-import { GameClientInstance } from "./index.d"
+import { GameClientAsyncMethods, BoardEvent, BoardEventHandler, GameClientInstance } from "./interfaces"
 
-type BoardEvent = "board_connection" | "board_update" | "black_turn" | "white_turn"
-type BoardEventHandler = (sender: GameClient) => void
-
-class GameClient extends ChessInstanceWrapper implements GameClientInstance {
+class GameClient extends ChessInstanceWrapper implements GameClientAsyncMethods, GameClientInstance  {
     private _socket: Socket = null;
     
     private _connectedID: number = null;
@@ -19,12 +16,55 @@ class GameClient extends ChessInstanceWrapper implements GameClientInstance {
         return this._socket;
     }
     
-    constructor(ip: string, gameID: number) {
-        super()
+    /**
+     * Creates new client and connects to server
+     * @param ip Server ip
+     * @param gameID Game id client tries to connect to
+     */
 
-        this._socket = io(`${ip}/chess/${gameID}`);
-        this.addEventListeners()
+    private constructor() {
+        super()
     }
+
+    /**
+     * Connect to unmanaged game
+     * @param gameURL address to connect
+     */
+    public static directConnectToGame(gameURL: string, query?: any): GameClient {
+        const client = new GameClient();
+
+        client._socket = io(gameURL, { forceNew: true, query });
+        client.addEventListeners()
+
+        return client
+    }
+
+    /**
+     * Connect to game server. Client will wait for handshake event to get information and connect to game.
+     */
+
+    public static connectToGameServer(serverURL: string, query?: any): GameClient {
+        const client = new GameClient()
+
+        client._socket = io(serverURL, { forceNew: true, query });
+        client.addEventListeners()
+
+        return client
+    }
+
+    /**
+     * Use existing connection to connect to game server. Client will wait for handshake event to get information and connect to game.
+     * @param socket 
+     */
+
+    public static useIO(socket: Socket): GameClient {
+        const client = new GameClient()
+
+        client._socket = socket
+        client.addEventListeners()
+
+        return client
+    }    
 
     // --------------------------------------
     //               Network
@@ -139,11 +179,7 @@ class GameClient extends ChessInstanceWrapper implements GameClientInstance {
     
     private eventHandlers = new Map<BoardEvent, BoardEventHandler[]>() 
 
-    /** 
-     *  @summary Add event listener
-     *  @description Event loop: board_connection => board_update => black_turn / white_turn 
-     */
-    public on(event: BoardEvent, handler: (sender: GameClient) => void) {
+    public on(event: BoardEvent, handler: BoardEventHandler) {
         if(this.eventHandlers.has(event)) {
             this.eventHandlers.get(event).push(handler)
         }
