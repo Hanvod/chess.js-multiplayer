@@ -1,10 +1,10 @@
 import { Chess, ChessInstance, Square, Move } from "chess.js"
-import { ChessWrapper } from "./interfaces"
+import { IChessboard } from "../interfaces"
 
 /**
  * Contains methods that doesn't affect game state and not meant to be synchronized
  */
-class ChessInstanceWrapper implements ChessWrapper {
+class ChessInstanceWrapper implements IChessboard {
     protected instance: ChessInstance = new Chess()
 
     public ascii() {

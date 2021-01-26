@@ -1,18 +1,15 @@
 import { ShortMove, Move, Piece, Square, PieceType, ChessInstance } from "chess.js"
-import ChessInstanceWrapper from "./RPCChessboard/chessWrapperBase"
-import GameServer from "./examples/gameServer"
-import RPCChessBoard from "./RPCChessboard"
-import GamePermissions from "./RPCChessboard/userPermissions"
+import NetworkChessboard from "./NetworkChessboard"
+import GamePermissions from "./NetworkChessboard/userPermissions"
 import { Socket } from "socket.io"
 
 type BoardEvent = "player_connection" | "board_update" | "game_over" | "black_turn" | "white_turn"
-type BoardEventHandler = (sender: ChessInstanceWrapper, ...args: any[]) => void
+
+type BoardEventHandler = (sender: IChessboard, ...args: any[]) => void
 
 type PermissionsResolver = (client: IChessboardClient) => GamePermissions
 
-interface ChessWrapper extends Omit<ChessInstance, "move" | "undo" | "reset" | "remove" | "put" | "header" | "move" | "load_pgn" | "load" | "clear"> {
-
-}
+interface IChessboard extends Omit<ChessInstance, "move" | "undo" | "reset" | "remove" | "put" | "header" | "move" | "load_pgn" | "load" | "clear"> { }
 
 interface GameServerSharedMethods {
     /**
@@ -155,11 +152,11 @@ interface GameServerSharedMethods {
 
 interface IChessboardClient {
     readonly socket: Socket;
-    readonly server: RPCChessBoard
+    readonly server: NetworkChessboard
 
     metadata: any
     permissions: GamePermissions
 }
 
-export { GameServerSharedMethods, ChessWrapper, BoardEvent, BoardEventHandler, PermissionsResolver, IChessboardClient }
+export { GameServerSharedMethods, IChessboard, BoardEvent, BoardEventHandler, PermissionsResolver, IChessboardClient }
 

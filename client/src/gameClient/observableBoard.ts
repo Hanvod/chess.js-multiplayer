@@ -1,11 +1,11 @@
 import ChessInstanceWrapper from "./chessWrapperBase";
-import { BoardEvent, BoardEventHandler } from "../interfaces"
+import { BoardEvent, BoardEventHandler } from "./interfaces"
 
 class ObservableBoard extends ChessInstanceWrapper {
     // --------------------------------------
-    //             Events 
+    //         Event emitter
     // --------------------------------------
-
+    
     private eventHandlers = new Map<BoardEvent, BoardEventHandler[]>() 
 
     public on(event: BoardEvent, handler: BoardEventHandler) {

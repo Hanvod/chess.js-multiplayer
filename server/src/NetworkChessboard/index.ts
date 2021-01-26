@@ -14,6 +14,12 @@ class NetworkChessboard extends ObservableBoard implements GameServerSharedMetho
         return [ ...this._users ];
     }
     
+    constructor() {
+        super()
+
+        setTimeout(this.invokeBoardEvents, 0)
+    }
+
     // --------------------------------------
     //          Client management
     // --------------------------------------

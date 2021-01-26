@@ -1,15 +1,15 @@
 import { Socket } from "socket.io-client";
 import { ShortMove, Move, Piece, Square, PieceType, ChessInstance } from "chess.js"
-import GameClient from "./gameClient";
+import GameClient from "./gameClientBase";
 
-type BoardEvent = "board_connection" | "board_update" | "black_turn" | "white_turn"
-type BoardEventHandler = (sender: GameClient) => void
+type BoardEvent = "board_connection" | "board_update" | "black_turn" | "white_turn" | "game_over"
+type BoardEventHandler = (sender: IChessboardSyncMethods, ...args: any[]) => void
 
-interface ChessWrapper extends Omit<ChessInstance, "move" | "undo" | "reset" | "remove" | "put" | "header" | "move" | "load_pgn" | "load" | "clear"> {
+interface IChessboardSyncMethods extends Omit<ChessInstance, "move" | "undo" | "reset" | "remove" | "put" | "header" | "move" | "load_pgn" | "load" | "clear"> {
 
 }
 
-interface GameClientAsyncMethods {
+interface IChessboardAsyncMethods {
     /**
      * This method is async and will be executed only after server-side permission validation.
      * Returns false if execution is forbidden or failed.
@@ -157,6 +157,8 @@ interface GameClientAsyncMethods {
     set_headers(...args: string[]): Promise<{ [key: string]: string | undefined } | boolean>
 }
 
+interface INetworkChessboard extends IChessboardAsyncMethods, IChessboardSyncMethods { }
+
 interface GameClientInstance {
     /**
      * ID of connected board
@@ -176,5 +178,5 @@ interface GameClientInstance {
     on(event: BoardEvent, handler: BoardEventHandler): void
 }
 
-export { GameClientAsyncMethods, ChessWrapper, BoardEvent, BoardEventHandler, GameClientInstance }
+export { IChessboardAsyncMethods as GameClientAsyncMethods, IChessboardSyncMethods as IChessboard, BoardEvent, BoardEventHandler, GameClientInstance, INetworkChessboard }
 
