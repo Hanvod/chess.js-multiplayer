@@ -62,6 +62,8 @@ class BoardEvents implements IBoardEvents {
             else {
                 this.emit("black_turn")
             }
+            
+            this.previousTurn = this.instance.turn()
         }
     }
 }

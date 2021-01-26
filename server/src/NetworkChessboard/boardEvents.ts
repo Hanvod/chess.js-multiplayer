@@ -1,9 +1,20 @@
-import ChessInstanceWrapper from "./chessWrapperBase";
-import { BoardEvent, BoardEventHandler } from "../interfaces"
+import { BoardEvent, BoardEventHandler, IBoardEvents } from "../interfaces"
+import NetworkChessboard from "./index"
 
-class ObservableBoard extends ChessInstanceWrapper {
+class BoardEvents implements IBoardEvents {
+    private networkBoard: NetworkChessboard
+    
+    // Controlled chess.js board instance
+    private get instance() { 
+        return this.networkBoard.instance 
+    } 
+
+    constructor(board: NetworkChessboard) {
+        this.networkBoard = board
+    }
+
     // --------------------------------------
-    //             Events 
+    //         Event emitter
     // --------------------------------------
 
     private eventHandlers = new Map<BoardEvent, BoardEventHandler[]>() 
@@ -22,8 +33,9 @@ class ObservableBoard extends ChessInstanceWrapper {
         this.eventHandlers.set(event, newList)
     }
 
-    protected emit(event: BoardEvent, ...args: any[]): void {
-        this.eventHandlers.get(event)?.forEach(handler => handler(this, ...args))
+    public emit(event: BoardEvent, ...args: any[]): void {
+        // this is ugly af
+        this.eventHandlers.get(event)?.forEach(handler => handler(this.networkBoard, ...args))
     }
 
     // --------------------------------------
@@ -33,25 +45,27 @@ class ObservableBoard extends ChessInstanceWrapper {
     private previousPGN = null
     private previousTurn = null
 
-    protected invokeBoardEvents() {
-        if(this.previousPGN !== this.pgn()) {
+    public invoke() {
+        if(this.previousPGN !== this.instance.pgn()) {
             this.emit("board_update")
-            this.previousPGN = this.pgn()
+            this.previousPGN = this.instance.pgn()
         }
         
-        if(this.game_over()) {
+        if(this.instance.game_over()) {
             return this.emit("game_over")
         }
 
-        if(this.turn() !== this.previousTurn) {
-            if(this.turn() === "w") {
+        if(this.instance.turn() !== this.previousTurn) {
+            if(this.instance.turn() === "w") {
                 this.emit("white_turn")
             }
             else {
                 this.emit("black_turn")
             }
+
+            this.previousTurn = this.instance.turn()
         }
     }
 }
 
-export default ObservableBoard
+export default BoardEvents

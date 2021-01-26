@@ -1,6 +1,8 @@
-import NetworkChessboard from "./gameClient/index"
+import { io } from "socket.io-client"
+import NetworkChessboard from "./gameClient/index.js"
 
-globalThis.server = NetworkChessboard
+globalThis.io = io
 
-setInterval(()=>{}, 10000)
+globalThis.board = NetworkChessboard.connectToGameServer("http://localhost:3000", {})
 
+setInterval(()=>{}, 0)

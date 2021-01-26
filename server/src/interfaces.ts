@@ -158,5 +158,16 @@ interface IChessboardClient {
     permissions: GamePermissions
 }
 
-export { GameServerSharedMethods, IChessboard, BoardEvent, BoardEventHandler, PermissionsResolver, IChessboardClient }
+interface IBoardEvents {
+    on(event: BoardEvent, handler: BoardEventHandler) 
+    off(event: BoardEvent, handler: BoardEventHandler)
+}
+
+interface INetworkChessboard extends IChessboard, GameServerSharedMethods {
+    events: IBoardEvents,
+    users: IChessboardClient[]
+    addUser(socket: Socket, permissions: GamePermissions | PermissionsResolver, handshakeData?: any): IChessboardClient
+}
+
+export { GameServerSharedMethods, IChessboard, BoardEvent, BoardEventHandler, PermissionsResolver, IChessboardClient, IBoardEvents, INetworkChessboard }
 

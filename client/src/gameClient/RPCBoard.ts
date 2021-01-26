@@ -44,6 +44,7 @@ class RPCBoard {
     private handshakeHandler = (fen: string, id: number) => {
         this.instance.load(fen)
         this.events.emit("board_connection")
+        this._connected = true
     }
 
     protected addEventListeners(): void {
@@ -58,7 +59,7 @@ class RPCBoard {
         this._socket.off("connect", this.connectHandler)
     }
 
-    private connectHandler() {
+    private connectHandler = () => {
         // Resync in case of reconnect
         if(this.connected) {
             this.forceResync()
