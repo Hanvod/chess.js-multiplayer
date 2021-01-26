@@ -1,13 +1,19 @@
+import { ChessInstance } from "chess.js";
 import ChessInstanceWrapper from "./chessWrapperBase";
 import GameClientBase from "./gameClientBase";
-import { BoardEvent, BoardEventHandler, IObservableBoard, INetworkChessboard } from "./interfaces"
+import { BoardEvent, BoardEventHandler, IBoardEvents, INetworkChessboard } from "./interfaces"
 
 
-class ObservableBoard extends ChessInstanceWrapper implements IObservableBoard {
+class BoardEvents implements IBoardEvents {
     // --------------------------------------
     //         Event emitter
     // --------------------------------------
-    
+    private instance: ChessInstance;
+
+    constructor(instance: ChessInstance) {
+        this.instance = instance
+    }
+
     private eventHandlers = new Map<BoardEvent, BoardEventHandler[]>() 
 
     public on(event: BoardEvent, handler: BoardEventHandler) {
@@ -24,7 +30,7 @@ class ObservableBoard extends ChessInstanceWrapper implements IObservableBoard {
         this.eventHandlers.set(event, newList)
     }
 
-    protected emit(event: BoardEvent, ...args: any[]): void {
+    public emit(event: BoardEvent, ...args: any[]): void {
         // this is ugly af
         this.eventHandlers.get(event)?.forEach(handler => handler(this as unknown as INetworkChessboard, ...args))
     }
@@ -36,18 +42,18 @@ class ObservableBoard extends ChessInstanceWrapper implements IObservableBoard {
     private previousPGN = null
     private previousTurn = null
 
-    protected invokeBoardEvents() {
-        if(this.previousPGN !== this.pgn()) {
+    public invoke() {
+        if(this.previousPGN !== this.instance.pgn()) {
             this.emit("board_update")
-            this.previousPGN = this.pgn()
+            this.previousPGN = this.instance.pgn()
         }
         
-        if(this.game_over()) {
+        if(this.instance.game_over()) {
             return this.emit("game_over")
         }
 
-        if(this.turn() !== this.previousTurn) {
-            if(this.turn() === "w") {
+        if(this.instance.turn() !== this.previousTurn) {
+            if(this.instance.turn() === "w") {
                 this.emit("white_turn")
             }
             else {
@@ -57,4 +63,4 @@ class ObservableBoard extends ChessInstanceWrapper implements IObservableBoard {
     }
 }
 
-export default ObservableBoard
+export default BoardEvents

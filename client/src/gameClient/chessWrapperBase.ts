@@ -4,7 +4,7 @@ import { IChessboard } from "./interfaces"
 /**
  * Contains methods that doesn't affect game state and not meant to be synchronized
  */
-class ChessInstanceWrapper implements IChessboard {
+abstract class ChessInstanceWrapper implements IChessboard {
     protected instance: ChessInstance = new Chess()
 
     public ascii() {

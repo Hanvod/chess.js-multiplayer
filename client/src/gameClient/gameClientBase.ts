@@ -2,11 +2,21 @@ import { Socket } from "socket.io-client";
 import { io } from "socket.io-client"
 import ChessInstanceWrapper from "./chessWrapperBase";
 import { Move, ShortMove, Square, Piece } from "chess.js"
-import { GameClientAsyncMethods } from "./interfaces"
-import ObservableBoard from "./observableBoard";
+import { GameClientAsyncMethods, IBoardEvents } from "./interfaces"
+import BoardEvents from "./boardEvents";
 import RPCBoard from "./RPCBoard";
 
-class GameClientBase extends RPCBoard implements GameClientAsyncMethods {
+abstract class GameClientBase extends ChessInstanceWrapper implements GameClientAsyncMethods {
+    protected rpcManager: RPCBoard = null
+    protected _events: BoardEvents = null 
+
+    public get events(): IBoardEvents {
+        return this._events
+    }
+
+    constructor() {
+        super()
+    }
     // --------------------------------------
     //       Synchronized Board API
     // --------------------------------------
@@ -18,39 +28,39 @@ class GameClientBase extends RPCBoard implements GameClientAsyncMethods {
             sloppy?: boolean;
         },
     ): Promise<Move> {
-        return await this.remoteMethodCall("move", [move])
+        return await this.rpcManager.remoteMethodCall("move", [move])
     }
 
     public async undo(): Promise<Move> {
-        return await this.remoteMethodCall("undo", [])
+        return await this.rpcManager.remoteMethodCall("undo", [])
     }
 
     public async reset(): Promise<void> {
-        return await this.remoteMethodCall("reset", [])
+        return await this.rpcManager.remoteMethodCall("reset", [])
     }
 
     public async remove(square: Square): Promise<Piece | null | false> {
-        return await this.remoteMethodCall("remove", [square])
+        return await this.rpcManager.remoteMethodCall("remove", [square])
     }
 
     public async put(piece: Piece, square: Square): Promise<boolean> {
-        return await this.remoteMethodCall("put", [piece, square])
+        return await this.rpcManager.remoteMethodCall("put", [piece, square])
     }
 
     public async load_pgn(pgn: string, options?: { newline_char?: string; sloppy?: boolean; }): Promise<boolean> {
-        return await this.remoteMethodCall("load_pgn", [pgn, options])
+        return await this.rpcManager.remoteMethodCall("load_pgn", [pgn, options])
     }
 
     public async load(fen: string): Promise<boolean> {
-        return await this.remoteMethodCall("load", [fen])
+        return await this.rpcManager.remoteMethodCall("load", [fen])
     }
 
     public async clear(): Promise<void> {
-        return await this.remoteMethodCall("clear", [])
+        return await this.rpcManager.remoteMethodCall("clear", [])
     }
 
     public async set_headers(...args: string[]): Promise<{ [key: string]: string | undefined } | boolean> {
-        return await this.remoteMethodCall("set_headers", [args])
+        return await this.rpcManager.remoteMethodCall("set_headers", [args])
     }
 }
 

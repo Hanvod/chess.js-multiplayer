@@ -1,27 +1,35 @@
 import { Socket } from "socket.io-client";
-import ObservableBoard from "./observableBoard";
+import ChessInstanceWrapper from "./chessWrapperBase";
+import BoardEvents from "./boardEvents";
+import { IBoardEvents } from "./interfaces"
+import { ChessInstance } from "chess.js";
 
-class RPCBoard extends ObservableBoard  {
-    protected _socket: Socket = null;
-    
-    private _connectedID: number = null;
-    public get connectedID(): number {
-        return this._connectedID;
-    }
+class RPCBoard {
+    private _socket: Socket = null;
     
     public get socket(): Socket {
         return this._socket;
     }
-
+    
     public set socket(value: Socket) {
         this.removeEventListeners()
         this._socket = value
         this.addEventListeners()
     }
+
+    private _connected: boolean = false;
     
-    constructor(socket: Socket) {
-        super()
+    public get connected(): boolean {
+        return this._connected;
+    }
+   
+    private instance: ChessInstance
+    private events: BoardEvents
+    
+    constructor(socket: Socket, instance: ChessInstance, events: BoardEvents) {
         this.socket = socket
+        this.instance = instance
+        this.events = events
     }
 
     // --------------------------------------
@@ -37,8 +45,7 @@ class RPCBoard extends ObservableBoard  {
 
     private handshakeHandler(fen: string, id: number) {
         this.instance.load(fen)
-        this._connectedID = id
-        this.emit("board_connection")
+        this.events.emit("board_connection")
     }
 
     private methodCallHadlerMapper = (method: string, args: any[]) => this.methodCallHandler(method, args);
@@ -59,22 +66,22 @@ class RPCBoard extends ObservableBoard  {
 
     private connectHandler() {
         // Resync in case of reconnect
-        if(this.connectedID !== null) {
+        if(this.connected) {
             this.forceResync()
         }
     }
 
     protected methodCallHandler(method: string, args: any[]) {
         this.instance[method](...args)
-        this.invokeBoardEvents()
+        this.events.invoke()
     }
 
-    protected remoteMethodCall(method: string, args: any[]): Promise<any> {
+    public remoteMethodCall(method: string, args: any[]): Promise<any> {
         return new Promise((resolve, reject) => {
             this.socket.emit("chess::method_call", method, args, (success: boolean) => {
                 if(success) {
                     resolve(this.instance[method](...args))
-                    this.invokeBoardEvents()
+                    this.events.invoke()
                 }
                 else {
                     reject("Not allowed")

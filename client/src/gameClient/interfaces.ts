@@ -157,12 +157,14 @@ interface IChessboardAsyncMethods {
     set_headers(...args: string[]): Promise<{ [key: string]: string | undefined } | boolean>
 }
 
-interface INetworkChessboard extends IChessboardAsyncMethods, IChessboardSyncMethods, IObservableBoard { }
+interface INetworkChessboard extends IChessboardAsyncMethods, IChessboardSyncMethods {
+    events: IBoardEvents
+ }
 
-interface IObservableBoard {
+interface IBoardEvents {
     on(event: BoardEvent, handler: BoardEventHandler) 
     off(event: BoardEvent, handler: BoardEventHandler)
 }
 
-export { IObservableBoard, IChessboardAsyncMethods as GameClientAsyncMethods, IChessboardSyncMethods as IChessboard, BoardEvent, BoardEventHandler, INetworkChessboard }
+export { IBoardEvents, IChessboardAsyncMethods as GameClientAsyncMethods, IChessboardSyncMethods as IChessboard, BoardEvent, BoardEventHandler, INetworkChessboard }
 
