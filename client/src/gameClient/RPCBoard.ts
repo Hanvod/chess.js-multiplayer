@@ -1,7 +1,5 @@
 import { Socket } from "socket.io-client";
-import ChessInstanceWrapper from "./chessWrapperBase";
 import BoardEvents from "./boardEvents";
-import { IBoardEvents } from "./interfaces"
 import { ChessInstance } from "chess.js";
 
 class RPCBoard {
@@ -50,13 +48,13 @@ class RPCBoard {
 
     protected addEventListeners(): void {
         this._socket.on("chess::method_call", this.methodCallHandler)
-        this._socket.on("chess_handshake", this.handshakeHandler);
+        this._socket.on("chess::handshake", this.handshakeHandler);
         this._socket.on("connect", this.connectHandler)
     }
 
     private removeEventListeners(): void {
         this._socket.off("chess::method_call", this.methodCallHandler)
-        this._socket.off("chess_handshake", this.handshakeHandler);
+        this._socket.off("chess::handshake", this.handshakeHandler);
         this._socket.off("connect", this.connectHandler)
     }
 

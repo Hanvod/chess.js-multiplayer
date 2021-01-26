@@ -1,6 +1,3 @@
-import { ChessInstance } from "chess.js";
-import ChessInstanceWrapper from "./chessWrapperBase";
-import GameClientBase from "./gameClientBase";
 import { BoardEvent, BoardEventHandler, IBoardEvents, INetworkChessboard } from "./interfaces"
 import NetworkChessboard from "./index"
 
