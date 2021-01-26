@@ -1,5 +1,3 @@
-import { Socket } from "socket.io-client";
-import { io } from "socket.io-client"
 import ChessInstanceWrapper from "./chessWrapperBase";
 import { Move, ShortMove, Square, Piece } from "chess.js"
 import { IChessboardAsyncMethods, IBoardEvents } from "./interfaces"

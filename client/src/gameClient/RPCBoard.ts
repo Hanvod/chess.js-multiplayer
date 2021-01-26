@@ -10,7 +10,7 @@ class RPCBoard {
     }
     
     public set socket(value: Socket) {
-        this.removeEventListeners()
+        this._socket && this.removeEventListeners()
         this._socket = value
         this.addEventListeners()
     }

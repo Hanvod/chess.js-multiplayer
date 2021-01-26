@@ -1,6 +1,5 @@
 import { Socket } from "socket.io";
 import GamePermissions from "./userPermissions";
-import GameServer from "../examples/gameServer"
 import RPCChessBoard from ".";
 import { IChessboardClient, PermissionsResolver } from "../interfaces";
 

@@ -1,5 +1,6 @@
-import NetworkChessboard from "./gameClient"
+import NetworkChessboard from "./gameClient/index"
 
-import { INetworkChessboard, BoardEvent, BoardEventHandler } from "./gameClient/interfaces"
+globalThis.server = NetworkChessboard
 
-export { NetworkChessboard, INetworkChessboard, BoardEvent, BoardEventHandler }
+setInterval(()=>{}, 10000)
+

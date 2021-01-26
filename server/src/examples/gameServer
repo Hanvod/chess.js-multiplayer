@@ -1,13 +1,14 @@
+/*
 import { Socket, Server, Namespace } from "socket.io";
-import ChessInstanceWrapper from "./chessWrapperBase";
-import GamePermissions from "../userPermissions";
-import GameServerClient from "../gameServerClient"
+import ChessInstanceWrapper from "../NetworkChessboard/chessWrapperBase";
+import GamePermissions from "../NetworkChessboard/userPermissions";
+import DefaultChessBoardClient from "../NetworkChessboard/chessboardClient"
 import { Move, ShortMove, Square, Piece } from "chess.js"
 import { GameServerSharedMethods, BoardEvent, BoardEventHandler } from "../interfaces"
-import ObservableBoard from "./observableBoard";
-import RPCChessBoard from "./rpcBoard";
+import ObservableBoard from "../NetworkChessboard/observableBoard";
+import NetworkChessboard from "../NetworkChessboard";
 
-class GameServer extends RPCChessBoard implements GameServerSharedMethods {
+class GameServer extends NetworkChessboard implements GameServerSharedMethods {
     private static instances: number = 0
 
     private _id;
@@ -42,3 +43,5 @@ class GameServer extends RPCChessBoard implements GameServerSharedMethods {
 }
 
 export default GameServer
+
+*/

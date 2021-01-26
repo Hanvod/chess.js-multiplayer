@@ -19,9 +19,9 @@ class NetworkChessboard extends GameClientBase implements INetworkChessboard {
         return new NetworkChessboard(io(endpoint, { forceNew: true, query }))
     }
 
-    public static connectToGameServerWaitForHandshake(endpoint: string, query: any, timeout: number = 5000): Promise<INetworkChessboard> {
+    public static connectToGameServerWaitForHandshake(endpoint: string, query: any, timeout?: number): Promise<INetworkChessboard> {
         return new Promise<INetworkChessboard>((resolve, reject) => {
-            const timeoutHandle = setTimeout(reject, timeout)
+            const timeoutHandle = timeout && setTimeout(reject, timeout)
             const client = NetworkChessboard.connectToGameServer(endpoint, query)
             client.events.on("board_connection", board => {
                 resolve(client)
