@@ -2,17 +2,23 @@ import { ChessInstance } from "chess.js";
 import ChessInstanceWrapper from "./chessWrapperBase";
 import GameClientBase from "./gameClientBase";
 import { BoardEvent, BoardEventHandler, IBoardEvents, INetworkChessboard } from "./interfaces"
-
+import NetworkChessboard from "./index"
 
 class BoardEvents implements IBoardEvents {
+    // Controlled chess.js board instance
+    private get instance() { 
+        return this.networkBoard.instance 
+    } 
+
+    private networkBoard: NetworkChessboard
+
+    constructor(board: NetworkChessboard) {
+        this.networkBoard = board
+    }
+
     // --------------------------------------
     //         Event emitter
     // --------------------------------------
-    private instance: ChessInstance;
-
-    constructor(instance: ChessInstance) {
-        this.instance = instance
-    }
 
     private eventHandlers = new Map<BoardEvent, BoardEventHandler[]>() 
 
@@ -32,7 +38,7 @@ class BoardEvents implements IBoardEvents {
 
     public emit(event: BoardEvent, ...args: any[]): void {
         // this is ugly af
-        this.eventHandlers.get(event)?.forEach(handler => handler(this as unknown as INetworkChessboard, ...args))
+        this.eventHandlers.get(event)?.forEach(handler => handler(this.networkBoard, ...args))
     }
 
     // --------------------------------------

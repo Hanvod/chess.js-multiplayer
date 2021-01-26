@@ -7,7 +7,7 @@ import RPCBoard from "./RPCBoard";
 class NetworkChessboard extends GameClientBase implements INetworkChessboard {
     private constructor(socket: Socket) {
         super()
-        this._events = new BoardEvents(this.instance)
+        this._events = new BoardEvents(this)
         this.rpcManager = new RPCBoard(socket, this.instance, this._events)
     }
 
@@ -31,3 +31,4 @@ class NetworkChessboard extends GameClientBase implements INetworkChessboard {
     }
 }
 
+export default NetworkChessboard

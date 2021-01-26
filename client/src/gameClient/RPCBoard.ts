@@ -43,25 +43,21 @@ class RPCBoard {
         })
     }
 
-    private handshakeHandler(fen: string, id: number) {
+    private handshakeHandler = (fen: string, id: number) => {
         this.instance.load(fen)
         this.events.emit("board_connection")
     }
 
-    private methodCallHadlerMapper = (method: string, args: any[]) => this.methodCallHandler(method, args);
-    private handshakeHadlerMapper = (fen: string, id: number) => this.handshakeHandler(fen, id)
-    private connectHandlerMapper = () => this.connectHandler()
-
     protected addEventListeners(): void {
-        this._socket.on("chess::method_call", this.methodCallHadlerMapper)
-        this._socket.on("chess_handshake", this.handshakeHadlerMapper);
-        this._socket.on("connect", this.connectHandlerMapper)
+        this._socket.on("chess::method_call", this.methodCallHandler)
+        this._socket.on("chess_handshake", this.handshakeHandler);
+        this._socket.on("connect", this.connectHandler)
     }
 
     private removeEventListeners(): void {
-        this._socket.off("chess::method_call", this.methodCallHadlerMapper)
-        this._socket.off("chess_handshake", this.handshakeHadlerMapper);
-        this._socket.off("connect", this.connectHandlerMapper)
+        this._socket.off("chess::method_call", this.methodCallHandler)
+        this._socket.off("chess_handshake", this.handshakeHandler);
+        this._socket.off("connect", this.connectHandler)
     }
 
     private connectHandler() {
@@ -71,7 +67,7 @@ class RPCBoard {
         }
     }
 
-    protected methodCallHandler(method: string, args: any[]) {
+    protected methodCallHandler = (method: string, args: any[]) => {
         this.instance[method](...args)
         this.events.invoke()
     }

@@ -166,5 +166,5 @@ interface IBoardEvents {
     off(event: BoardEvent, handler: BoardEventHandler)
 }
 
-export { IBoardEvents, IChessboardAsyncMethods as GameClientAsyncMethods, IChessboardSyncMethods as IChessboard, BoardEvent, BoardEventHandler, INetworkChessboard }
+export { IBoardEvents, IChessboardAsyncMethods, IChessboardSyncMethods, BoardEvent, BoardEventHandler, INetworkChessboard }
 

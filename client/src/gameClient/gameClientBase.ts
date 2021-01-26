@@ -2,11 +2,11 @@ import { Socket } from "socket.io-client";
 import { io } from "socket.io-client"
 import ChessInstanceWrapper from "./chessWrapperBase";
 import { Move, ShortMove, Square, Piece } from "chess.js"
-import { GameClientAsyncMethods, IBoardEvents } from "./interfaces"
+import { IChessboardAsyncMethods, IBoardEvents } from "./interfaces"
 import BoardEvents from "./boardEvents";
 import RPCBoard from "./RPCBoard";
 
-abstract class GameClientBase extends ChessInstanceWrapper implements GameClientAsyncMethods {
+abstract class GameClientBase extends ChessInstanceWrapper implements IChessboardAsyncMethods {
     protected rpcManager: RPCBoard = null
     protected _events: BoardEvents = null 
 

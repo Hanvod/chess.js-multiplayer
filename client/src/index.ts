@@ -1,5 +1,5 @@
-import GameClient from "./gameClient";
-import { BoardEvent, BoardEventHandler } from "./interfaces" 
+import NetworkChessboard from "./gameClient"
 
-export { GameClient,  BoardEvent, BoardEventHandler }
+import { INetworkChessboard, BoardEvent, BoardEventHandler } from "./gameClient/interfaces"
 
+export { NetworkChessboard, INetworkChessboard, BoardEvent, BoardEventHandler }
