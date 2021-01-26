@@ -1,7 +1,9 @@
 import ChessInstanceWrapper from "./chessWrapperBase";
-import { BoardEvent, BoardEventHandler } from "./interfaces"
+import GameClientBase from "./gameClientBase";
+import { BoardEvent, BoardEventHandler, IObservableBoard, INetworkChessboard } from "./interfaces"
 
-class ObservableBoard extends ChessInstanceWrapper {
+
+class ObservableBoard extends ChessInstanceWrapper implements IObservableBoard {
     // --------------------------------------
     //         Event emitter
     // --------------------------------------
@@ -23,7 +25,8 @@ class ObservableBoard extends ChessInstanceWrapper {
     }
 
     protected emit(event: BoardEvent, ...args: any[]): void {
-        this.eventHandlers.get(event)?.forEach(handler => handler(this, ...args))
+        // this is ugly af
+        this.eventHandlers.get(event)?.forEach(handler => handler(this as unknown as INetworkChessboard, ...args))
     }
 
     // --------------------------------------

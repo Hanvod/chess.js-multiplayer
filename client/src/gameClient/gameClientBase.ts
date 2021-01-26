@@ -2,7 +2,7 @@ import { Socket } from "socket.io-client";
 import { io } from "socket.io-client"
 import ChessInstanceWrapper from "./chessWrapperBase";
 import { Move, ShortMove, Square, Piece } from "chess.js"
-import { GameClientAsyncMethods, BoardEvent, BoardEventHandler, GameClientInstance } from "./interfaces"
+import { GameClientAsyncMethods } from "./interfaces"
 import ObservableBoard from "./observableBoard";
 import RPCBoard from "./RPCBoard";
 

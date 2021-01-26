@@ -3,7 +3,7 @@ import { ShortMove, Move, Piece, Square, PieceType, ChessInstance } from "chess.
 import GameClient from "./gameClientBase";
 
 type BoardEvent = "board_connection" | "board_update" | "black_turn" | "white_turn" | "game_over"
-type BoardEventHandler = (sender: IChessboardSyncMethods, ...args: any[]) => void
+type BoardEventHandler = (sender: INetworkChessboard, ...args: any[]) => void
 
 interface IChessboardSyncMethods extends Omit<ChessInstance, "move" | "undo" | "reset" | "remove" | "put" | "header" | "move" | "load_pgn" | "load" | "clear"> {
 
@@ -157,26 +157,12 @@ interface IChessboardAsyncMethods {
     set_headers(...args: string[]): Promise<{ [key: string]: string | undefined } | boolean>
 }
 
-interface INetworkChessboard extends IChessboardAsyncMethods, IChessboardSyncMethods { }
+interface INetworkChessboard extends IChessboardAsyncMethods, IChessboardSyncMethods, IObservableBoard { }
 
-interface GameClientInstance {
-    /**
-     * ID of connected board
-     */
-    connectedID: number | null
-    
-    /**
-     * Socket client uses
-     */
-    socket: Socket
-
-    /** 
-     *  Adds event listener
-     *  
-     *  Event loop: board_connection => board_update => black_turn / white_turn 
-     */
-    on(event: BoardEvent, handler: BoardEventHandler): void
+interface IObservableBoard {
+    on(event: BoardEvent, handler: BoardEventHandler) 
+    off(event: BoardEvent, handler: BoardEventHandler)
 }
 
-export { IChessboardAsyncMethods as GameClientAsyncMethods, IChessboardSyncMethods as IChessboard, BoardEvent, BoardEventHandler, GameClientInstance, INetworkChessboard }
+export { IObservableBoard, IChessboardAsyncMethods as GameClientAsyncMethods, IChessboardSyncMethods as IChessboard, BoardEvent, BoardEventHandler, INetworkChessboard }
 
