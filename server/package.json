@@ -1,5 +1,5 @@
 {
-  "name": "server",
+  "name": "chess.js-multiplayer-server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",

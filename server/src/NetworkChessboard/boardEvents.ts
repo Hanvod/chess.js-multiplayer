@@ -1,40 +1,16 @@
-import { BoardEvent, BoardEventHandler, IBoardEvents, INetworkChessboard } from "../interfaces"
-import NetworkChessboard from "./index"
 import { ChessInstance } from "chess.js"
+import { BoardEvent, BoardEventHandler, IBoardEvents } from "../interfaces"
+import NetworkChessboard from "./index"
 
 class BoardEvents implements IBoardEvents {
+    private networkBoard: NetworkChessboard
+    
     // Controlled chess.js board instance
     private instance: ChessInstance
 
-    private networkBoard: NetworkChessboard
-
-    constructor(board: NetworkChessboard, chessJSInstance: ChessInstance) {
+    constructor(board: NetworkChessboard, instance: ChessInstance) {
         this.networkBoard = board
-        this.instance = chessJSInstance
-    }
-    
-    // --------------------------------------
-    //         Async events
-    // --------------------------------------
-
-    public async waitForTurn(turn: "black" | "white"): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if(this.instance.turn() === turn[0]) {
-                resolve()
-            }
-            else {
-                if(this.instance.game_over()) {
-                    reject()
-                }
-                else {
-                    const handler = (board) => {
-                        this.off("board_update", handler)
-                        resolve()
-                    }
-                    this.on("board_update", handler)
-                }
-            }
-        })
+        this.instance = instance
     }
 
     // --------------------------------------
@@ -86,7 +62,7 @@ class BoardEvents implements IBoardEvents {
             else {
                 this.emit("black_turn")
             }
-            
+
             this.previousTurn = this.instance.turn()
         }
     }
