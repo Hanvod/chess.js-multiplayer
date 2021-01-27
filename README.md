@@ -1,6 +1,6 @@
 # Warning
 
-This package is never properly tested and still in WIP state.
+This package was never properly tested and still in early WIP state.
 
 # chess.js-socket.io
 Chess multiplayer library based on chess.js
