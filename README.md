@@ -28,16 +28,7 @@ server.on("connection", socket => {
 This example connects to board and plays randomly as white
 ```javascript
 const socket = io({ query: "white_player" })
-
 const board = new NetworkChessboard(socket)
-
-board.on("board_connection", (board) => {
-  console.log("Connected to remote board")
-})
-
-board.on("board_update", (board) => {
-  console.log(`New position: \n {board.ascii()}`)
-});
 
 board.on("white_turn", (board) => {
     const moves = board.moves()
@@ -49,7 +40,7 @@ board.on("white_turn", (board) => {
 
 ### With async events
 
-```
+```javascript
 const socket = io({ query: "white_player" })
 const board = new NetworkChessboard(socket);
 
