@@ -6,19 +6,18 @@ import RPCBoard from "./rpcBoard";
 import ChessWrapperWithSharedMethods from "./chessWrapperAsync"
 import { IBoardEvents } from "../interfaces"
 import { INetworkChessboard } from "../interfaces"
+import BoardEvents from "./boardEvents";
 
 class NetworkChessboard extends ChessWrapperWithSharedMethods implements INetworkChessboard {
-    private constructor() {
-        super()
-        this.rpcManager = new RPCBoard(this)
-    }
-
+    protected _events = new BoardEvents(this, this.instance)
+    protected rpcManager: RPCBoard = new RPCBoard(this._events, this.instance)
+    
     public get users(): IChessboardClient[] {
         return this.rpcManager.users
     }
 
     public get events(): IBoardEvents {
-        return this.rpcManager.events
+        return this._events
     }
     
     public addUser(socket: Socket, permissions: GamePermissions | PermissionsResolver, handshakeData?: any): IChessboardClient {
@@ -31,10 +30,6 @@ class NetworkChessboard extends ChessWrapperWithSharedMethods implements INetwor
         this.rpcManager.addClient(client, handshakeData)
 
         return client
-    }
-
-    public static create(): INetworkChessboard {
-        return new NetworkChessboard()
     }
 }
 

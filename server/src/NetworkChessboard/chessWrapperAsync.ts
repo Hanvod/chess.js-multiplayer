@@ -1,10 +1,16 @@
 import ChessInstanceWrapper from "./chessWrapperBase"
 import RPCBoard from "./rpcBoard"
 import { Piece, Square, Move, ShortMove } from "chess.js"
-import { GameServerSharedMethods } from "../interfaces"
+import { GameServerSharedMethods, IBoardEvents } from "../interfaces"
+import BoardEvents from "./boardEvents"
 
-class ChessWrapperWithSharedMethods extends ChessInstanceWrapper implements GameServerSharedMethods {
-    protected rpcManager: RPCBoard = null
+abstract class ChessWrapperWithSharedMethods extends ChessInstanceWrapper implements GameServerSharedMethods {
+    protected abstract rpcManager: RPCBoard = null
+    protected abstract _events: BoardEvents = null 
+
+    public get events(): IBoardEvents {
+        return this._events
+    }
 
     public move(move: string | ShortMove,
                 options?: {

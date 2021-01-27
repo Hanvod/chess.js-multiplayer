@@ -1,30 +1,16 @@
 import { ChessInstance, ShortMove, Move } from "chess.js"
 import BoardEvents from "./boardEvents" 
-import { IChessboardClient } from "../interfaces"  
 import ChessboardClient from "./chessboardClient"
 import { Socket } from "socket.io"
-import GamePermissions from "./userPermissions"
-import { PermissionsResolver } from "../interfaces"
-import NetworkChessboard from "."
-
-import { IBoardEvents } from "../interfaces"
 
 class RPCBoard {
     private _events: BoardEvents
+    private instance: ChessInstance
     private _users: ChessboardClient[] = []
-    private networkBoard: NetworkChessboard
-
-    private get instance(): ChessInstance{
-        return this.networkBoard.instance
-    }
     
-    public get events(): IBoardEvents {
-        return this._events
-    }
-    
-    constructor(networkBoard: NetworkChessboard) {
-        this.networkBoard = networkBoard
-        this._events = new BoardEvents(networkBoard)
+    constructor(events: BoardEvents, instance: ChessInstance) {
+        this._events = events
+        this.instance = instance
     }
    
     public get users(): ChessboardClient[] {
