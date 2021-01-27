@@ -26,6 +26,7 @@ server.on("connection", socket => {
 
 ## Client
 This example connects to board and plays randomly as white
+### With default events
 ```javascript
 const socket = io({ query: "white_player" })
 const board = new NetworkChessboard(socket)
