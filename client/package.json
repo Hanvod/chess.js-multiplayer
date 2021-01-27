@@ -1,9 +1,8 @@
 {
   "name": "chess.js-socket.io-client",
-  "version": "1.1.8",
+  "version": "2.0.1",
   "description": "",
   "main": "dist/index.js",
-  "type": "module",
   "types": "dist",
   "scripts": {
     "build": "tsc -p ."

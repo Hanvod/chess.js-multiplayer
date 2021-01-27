@@ -5,50 +5,50 @@ import { IChessboardSyncMethods } from "./interfaces"
  * Contains methods that doesn't affect game state and not meant to be synchronized
  */
 abstract class ChessInstanceWrapper implements IChessboardSyncMethods {
-    public instance: ChessInstance = new Chess()
+    protected chessJSInstance: ChessInstance = new Chess()
 
     public ascii() {
-        return this.instance.ascii()
+        return this.chessJSInstance.ascii()
     }
 
     public board() {
-        return this.instance.board()
+        return this.chessJSInstance.board()
     }
 
     public fen() {
-        return this.instance.fen()
+        return this.chessJSInstance.fen()
     }
 
     public game_over() {
-        return this.instance.game_over()
+        return this.chessJSInstance.game_over()
     }
 
     public get(square: Square) {
-        return this.instance.get(square)
+        return this.chessJSInstance.get(square)
     }
 
     public in_check() {
-        return this.instance.in_check()
+        return this.chessJSInstance.in_check()
     }
 
     public in_checkmate() {
-        return this.instance.in_checkmate()
+        return this.chessJSInstance.in_checkmate()
     }
 
     public in_draw() {
-        return this.instance.in_draw()
+        return this.chessJSInstance.in_draw()
     }
 
     public in_stalemate() {
-        return this.instance.in_stalemate()
+        return this.chessJSInstance.in_stalemate()
     }
 
     public in_threefold_repetition() {
-        return this.instance.in_threefold_repetition()
+        return this.chessJSInstance.in_threefold_repetition()
     }
 
     public insufficient_material() {
-        return this.instance.insufficient_material()
+        return this.chessJSInstance.insufficient_material()
     }
 
     public moves(options: {
@@ -65,7 +65,7 @@ abstract class ChessInstanceWrapper implements IChessboardSyncMethods {
         verbose?: boolean;
         square?: string;
     }): string[] | Move[] {
-        return this.instance.moves(options);
+        return this.chessJSInstance.moves(options);
     }
 
     public history(options?: {
@@ -79,23 +79,23 @@ abstract class ChessInstanceWrapper implements IChessboardSyncMethods {
     public history(options?: {
         verbose?: boolean;
     }): string[] | Move[] {
-        return this.instance.history(options)
+        return this.chessJSInstance.history(options)
     }
 
     public turn() {
-        return this.instance.turn()
+        return this.chessJSInstance.turn()
     }
 
     public validate_fen(fen: string) {
-        return this.instance.validate_fen(fen)
+        return this.chessJSInstance.validate_fen(fen)
     }
 
     public pgn(options?: { max_width?: number; newline_char?: string; }) {
-        return this.instance.pgn(options)
+        return this.chessJSInstance.pgn(options)
     }
     
     public square_color(square: Square) {
-        return this.instance.square_color(square);
+        return this.chessJSInstance.square_color(square);
     }
 
     public readonly SQUARES: [
@@ -259,7 +259,7 @@ abstract class ChessInstanceWrapper implements IChessboardSyncMethods {
     }
 
     public get_headers() {
-        return this.instance.header()
+        return this.chessJSInstance.header()
     }
 }
 

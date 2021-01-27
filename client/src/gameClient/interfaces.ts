@@ -1,13 +1,11 @@
-import { Socket } from "socket.io-client";
+import { Socket } from "socket.io-client"
 import { ShortMove, Move, Piece, Square, PieceType, ChessInstance } from "chess.js"
-import GameClient from "./gameClientBase";
+import GameClient from "./gameClientBase"
 
 type BoardEvent = "board_connection" | "board_update" | "black_turn" | "white_turn" | "game_over"
 type BoardEventHandler = (sender: INetworkChessboard, ...args: any[]) => void
 
-interface IChessboardSyncMethods extends Omit<ChessInstance, "move" | "undo" | "reset" | "remove" | "put" | "header" | "move" | "load_pgn" | "load" | "clear"> {
-
-}
+interface IChessboardSyncMethods extends Omit<ChessInstance, "move" | "undo" | "reset" | "remove" | "put" | "header" | "move" | "load_pgn" | "load" | "clear"> { }
 
 interface IChessboardAsyncMethods {
     /**
@@ -164,6 +162,8 @@ interface INetworkChessboard extends IChessboardAsyncMethods, IChessboardSyncMet
 interface IBoardEvents {
     on(event: BoardEvent, handler: BoardEventHandler) 
     off(event: BoardEvent, handler: BoardEventHandler)
+    waitForTurn(turn: "black" | "white"): Promise<void>
+    waitForConnection(): Promise<void>
 }
 
 export { IBoardEvents, IChessboardAsyncMethods, IChessboardSyncMethods, BoardEvent, BoardEventHandler, INetworkChessboard }

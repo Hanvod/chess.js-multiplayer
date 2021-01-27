@@ -1,12 +1,9 @@
 {
   "compilerOptions": {
-    "module": "ES2020",
-    "target": "es6",
+    "lib": ["ES2015", "dom"],
     "moduleResolution": "node",
-    "sourceMap": true,
-    "outDir": "dist",
-	"declaration": true,
-	"declarationMap": true
-  },
-  "lib": ["es2015"]
+	"module": "es6",
+    "target": "es6",
+	"outDir": "./dist"
+  }
 }

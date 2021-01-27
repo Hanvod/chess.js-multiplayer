@@ -4,22 +4,26 @@ import { IChessboardAsyncMethods, IBoardEvents } from "./interfaces"
 import BoardEvents from "./boardEvents";
 import RPCBoard from "./RPCBoard";
 
+/**
+ * Contains synchronized methods and event emmiter.
+ */
 abstract class GameClientBase extends ChessInstanceWrapper implements IChessboardAsyncMethods {
-    protected rpcManager: RPCBoard = null
-    protected _events: BoardEvents = null 
+    protected abstract rpcManager: RPCBoard = null
+    protected abstract _events: BoardEvents = null 
 
     public get events(): IBoardEvents {
         return this._events
     }
-
-    constructor() {
-        super()
-    }
+    
     // --------------------------------------
     //       Synchronized Board API
     // --------------------------------------
 
-    //"!undo", "!reset", "!remove", "!put", "!move", "!load_pgn", "!load", "clear"
+   
+
+    // --------------------------------------
+    //       Synchronized Board API
+    // --------------------------------------
 
     public async move(move: string | ShortMove,
         options?: {

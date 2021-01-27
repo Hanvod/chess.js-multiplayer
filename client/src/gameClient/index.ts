@@ -5,22 +5,39 @@ import { INetworkChessboard } from "./interfaces";
 import RPCBoard from "./RPCBoard";
 
 class NetworkChessboard extends GameClientBase implements INetworkChessboard {
-    private constructor(socket: Socket) {
+    public get connected(): boolean {
+        return this.rpcManager.connected
+    }
+ 
+    protected _events = new BoardEvents(this, this.chessJSInstance)
+    protected rpcManager: RPCBoard
+
+    /**
+     * Creates a chessboard from socket. Chessboard will wait for handshake event from server to load data.
+     * @param socket 
+     */
+    public constructor(socket: Socket) {
         super()
-        this._events = new BoardEvents(this)
-        this.rpcManager = new RPCBoard(socket, this.instance, this._events)
+        this.rpcManager = new RPCBoard(socket, this.chessJSInstance, this._events)
     }
 
-    public static useIO(socket: Socket): INetworkChessboard {
-        return new NetworkChessboard(socket)
-    }
-
-    public static connectToGameServer(endpoint: string, query: any): INetworkChessboard {
+    /**
+     * Creates a chessboard with new io() connection using given query. Chessboard will wait for handshake event from server to load data.
+     * @param endpoint 
+     * @param query 
+     */
+    public static connectToGameServer(endpoint: string, query: any): NetworkChessboard {
         return new NetworkChessboard(io(endpoint, { forceNew: true, query }))
     }
 
-    public static connectToGameServerWaitForHandshake(endpoint: string, query?: any, timeout?: number): Promise<INetworkChessboard> {
-        return new Promise<INetworkChessboard>((resolve, reject) => {
+    /**
+     * Creates a new io() connection with given query and waits for chessboard handshake.
+     * @param endpoint 
+     * @param query 
+     * @param timeout 
+     */
+    public static connectToGameServerWaitForHandshake(endpoint: string, query?: any, timeout?: number): Promise<NetworkChessboard> {
+        return new Promise<NetworkChessboard>((resolve, reject) => {
             const timeoutHandle = timeout && setTimeout(reject, timeout)
             const client = NetworkChessboard.connectToGameServer(endpoint, query)
             client.events.on("board_connection", board => {

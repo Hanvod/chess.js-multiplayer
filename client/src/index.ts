@@ -1,8 +1,4 @@
-import { io } from "socket.io-client"
-import NetworkChessboard from "./gameClient/index.js"
+import { IBoardEvents, BoardEvent, BoardEventHandler, INetworkChessboard } from "./gameClient/interfaces"
+import NetworkChessboard from "./gameClient"
 
-globalThis.io = io
-
-globalThis.board = NetworkChessboard.connectToGameServer("http://localhost:3000", {})
-
-setInterval(()=>{}, 0)
+export { NetworkChessboard, IBoardEvents, BoardEvent, BoardEventHandler, INetworkChessboard }
