@@ -40,9 +40,9 @@ board.on("board_update", (board) => {
 });
 
 board.on("white_turn", (board) => {
-    const moves = chess.moves()
+    const moves = board.moves()
     const move = moves[Math.floor(Math.random() * moves.length)]
-    chess.move(move)
+    board.move(move)
 })
 
 ```
