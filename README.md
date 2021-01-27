@@ -46,3 +46,21 @@ board.on("white_turn", (board) => {
 })
 
 ```
+
+### With async events
+
+```
+const socket = io({ query: "white_player" })
+const board = new NetworkChessboard(socket);
+
+(async () => {
+    await board.events.waitForConnection()
+
+    while(!board.game_over()) {
+        await board.events.waitForTurn("white")
+        const moves = board.moves()
+        const move = moves[Math.floor(Math.random() * moves.length)]
+        await board.move(move)
+    }
+})()
+```
